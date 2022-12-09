@@ -1,12 +1,17 @@
 import asyncio
 import json
 import logging
+import os
+
 import commandHandlers
 from telegram.ext import Updater, Dispatcher
 from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
+
+import SystemDataProvider
+from database import Database
 
 def registerHandlers(dispatcher: Dispatcher):
 
@@ -19,6 +24,8 @@ def registerHandlers(dispatcher: Dispatcher):
     method_list = [func for func in dir(commandHandlers) if callable(getattr(commandHandlers, func)) and func.startswith(handlerPrefix)]
     for handlerName in method_list:
         dispatcher.add_handler(CommandHandler(handlerName[len(handlerPrefix):len(handlerName)], getattr(commandHandlers, handlerName)))
+
+
 
 
 if __name__ == '__main__':
@@ -40,7 +47,15 @@ if __name__ == '__main__':
     aps_logger = logging.getLogger('apscheduler')
     aps_logger.setLevel(logging.WARNING)
 
+    # Is there an existing database file? If so, load it
+    databasePath = configData["databasePath"]
+    if os.path.isfile(databasePath):
+        database = Database(databasePath)
+    else:
+        database = Database()
 
+    systemDataPath = configData["systemDataPath"]
+    SystemDataProvider.loadDefaultData(systemDataPath)
 
     updater = Updater(token=configData["token"], use_context=True)
     registerHandlers(updater.dispatcher)

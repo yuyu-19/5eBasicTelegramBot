@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
+from ObjectClasses.user import User
 
 def messageHandler_echo(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)

@@ -1,0 +1,87 @@
+//TODO: Add features through levels, as well as max spell slot level per level
+//PROFICIENCY IS CALCULATED BASED ON TOTAL LEVEL!
+{
+  "proficiency_table": [2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6], //TODO: Replace with a simple formula (floor((character_level-1)/4)+2)
+  "cleric": {
+    "display_name": "Cleric",
+    "hit_die": "d8",
+    "saving_throws": ["wis","cha"],
+    "armor_proficiencies": ["light","medium","shields"],
+    "proficiencies": ["light_armor","medium_armor","shields","simple_weapons"],
+    "ASI_levels": [4,8,12,16,19],   //ASIs are separate from other features as they are always the same.
+    "levels": {
+      "1": {
+        "max_spell_lvl": 1,
+        "features": {
+          "spellcasting": {
+            "display_name" : "Spellcasting",
+            "description": "As a student of arcane magic, you have a spellbook containing spells that show the first glimmerings of your true power."
+          },
+          "arcane_recovery": {
+            "display_name": "Arcane Recovery",
+            "description": "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up),and none of the slots can be 6th level or higher."
+          }
+        }
+      },
+      "2": {
+        "max_spell_lvl": 1,
+        "features:" :{
+          //subclass_choice gives you, well, a choice, and sets the subclass value.
+          //subclass_perk meanwhile only presents one option based on the subclass value.
+          "subclass_choice" : {
+            "display_name": "Arcane Tradition",
+            "options": {
+              "evocation": {
+                  "display_name": "School of Evocation",
+                  "description": "You focus your study on magic that creates powerful elemental effects such as bitter cold, searing flame, rolling thunder, crackling lightning, and burning acid."
+              },
+              //Technically only one subclass is included in the basic rules, but I'd like to test letting the player choose between multiple ones, so I will add a second one per class.
+              "divination": {
+
+              }
+            }
+          },
+          "subclass_perk": {
+            "evocation_savant": {
+              "subclass": "evocation",
+              "display_name" : "Evocation Savant",
+              "description": "Beginning when you select this school at 2nd level, the gold and time you must spend to copy an evocation spell into your spellbook is halved."
+            },
+            "divination_savant": {
+              "subclass": "divination",
+              "display_name": "Divination Savant",
+              "description" : "idk"
+            }
+          }
+        }
+      },
+      "3": {
+        "max_spell_lvl": 2
+      },
+      "4": {
+        "max_spell_lvl" : 2
+      }
+    }
+  },
+  "fighter": {
+    "display_name": "Fighter",
+    "hit_die": "d10",
+    "saving_throws": ["str","con"],
+    "armor_proficiencies": ["light","medium","heavy","shields"],
+    "proficiencies": ["Simple Weapons","Martial Weapons"]
+  },
+  "rogue": {
+    "display_name": "Rogue",
+    "hit_die": "d8",
+    "saving_throws": ["dex","int"],
+    "armor_proficiencies": ["light"],
+    "proficiencies": ["Simple weapons","Hand crossbows","Longswords","Rapiers","Shortswords"]
+  },
+  "wizard": {
+    "display_name": "Wizard",
+    "hit_die": "d6",
+    "saving_throws": ["int","wis"],
+    "armor_proficiencies": ["light"],
+    "proficiencies": ["Simple weapons"]
+  }
+}

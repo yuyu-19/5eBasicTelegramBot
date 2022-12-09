@@ -1,0 +1,14 @@
+{
+  "example_spell":{
+    "display_name": "example spell",
+    "spell_level": 0,
+    "classes": ["wizard","cleric"],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+
+    "Note:": "I should definitely parse the description for a dice number to let the user roll it.",
+    "IMPORTANT": "SCRAPE THE SPELLS ETC FROM 5ETOOLS!"
+  }
+}
