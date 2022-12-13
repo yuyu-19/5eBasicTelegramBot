@@ -1,6 +1,6 @@
 #Loads the system-specific data from the given folder and provides helper methods.
 import copy
-import json
+import jk_commentjson as json
 import os
 
 _defaultCharacterSheet = {}
@@ -17,6 +17,8 @@ def loadDefaultData(systemDataPath):
     global _spells
     _spells = json.load(open(os.path.join(systemDataPath, "spells.json")))
     #Let's try and parse the spells to find damage dice and upcast potential.
+    #TODO: Handle the above in preprocessing rather than on the fly. No reason to do it every time after all.
+    #Better idea: Literally just use 5etools' existing dataset for spells.
 
 
 def getDefaultStats():
