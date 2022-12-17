@@ -2,7 +2,6 @@
 //PROFICIENCY IS CALCULATED BASED ON TOTAL LEVEL!
 {
   //TODO Replace with a simple formula (floor((character_level-1)/4)+2)
-  "proficiency_table": [2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6],
   "wizard": {
     "display_name": "Wizard",
     "hit_die": "d6",
@@ -14,10 +13,10 @@
     //The level up process first checks if there are any new features, then it checks for if there's an ASI.
     //If the user is a spellcaster and EITHER their maximum amount of prepared spells changes (or their maximum spell level increases)
     //They are reminded to rearrange their spells.
-    //TODO MAKE THE SPELL SELECTION AS WELL
-    //TODO MAKE THE LEVEL UP SCREEN, which includes: selecting features, showing features, selecting stats for ASI
+    //TODO: MAKE THE SPELL SELECTION AS WELL
+    //TODO: MAKE THE LEVEL UP SCREEN, which includes: selecting features, showing features, selecting stats for ASI
     "ASI_levels": [4,8,12,16,19],
-    "max_spell_lvl": [],
+    "max_spell_lvl_increases": [1,3,5,7,8,11,13,15,17],
     "features_by_level": {
       "1": {
         "spellcasting": {

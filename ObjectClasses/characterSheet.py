@@ -1,23 +1,26 @@
 import SystemDataProvider
+from ObjectClasses.user import User
+
 
 class CharacterSheet:
     def __init__(self,userID):
-        self.linkedUser = userID
-        #self.stats = SystemDataProvider.getDefaultStatArray()
-        self.DMs = []         #Contains the IDs for all campaigns the player is DMing
-        self.players = []       #Contains the IDs for all campaigns the player is playing in
-        self.PCdata = []           #PC sheets
-        self.NPCdata = []          #NPC sheets
+        #Remember that proficiency is (floor((character_level-1)/4)+2) for players
+        self._creatorID = userID
+        self._stats = SystemDataProvider.getDefaultStats()
+        for statID,stat in self._stats:
+            stat["value"] = 10
 
-    def getPlayerFromSheet(self):
-        return self.linkedUser
+        self._savingThrows = SystemDataProvider.getDefaultStats()
+        for statID,savingThrow in self._savingThrows:
+            savingThrow["proficiency_multiplier"] = 0
+        self.abilities = [] #Contains all abilities gained from the class/subclass
 
-    def getDMIDs(self):
-        return self.DMs
+    def getLinkedUserID(self):
+        return self._creatorID
 
-    def addPlayer(self, newPlayer: User) -> User:
-        self.players.append(newPlayer.userID)
+    def setStat(self, statID, amount):
+        self._stats[statID] = amount
+        return
 
-    def addDM(self, newDM: User):
-        self.DMs.append(newDM.userID)
+
 

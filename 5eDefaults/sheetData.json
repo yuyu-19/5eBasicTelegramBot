@@ -4,93 +4,93 @@
 			"display_name":"Strength"
 		},
 		"dex":{
-				"display_name":"Dexterity"
+			"display_name":"Dexterity"
 		},
 		"con":{
-				"display_name":"Constitution"
+			"display_name":"Constitution"
 		},
 		"int":{
-				"display_name":"Intelligence"
+			"display_name":"Intelligence"
 		},
 		"wis":{
-				"display_name":"Wisdom"
+			"display_name":"Wisdom"
 		},
 		"cha":{
-				"display_name":"Charisma"
+			"display_name":"Charisma"
 		}
 	},
 	"skills": {
 		"acrobatics":{
 			"display_name":"Acrobatics",
-			"linked_stat":"DEX"
+			"linked_stat":"dex"
 		},
 		"animal_handling":{
 			"display_name":"Animal Handling",
-			"linked_stat":"WIS"
+			"linked_stat":"wis"
 		},
 		"arcana":{
 			"display_name":"Arcana",
-			"linked_stat":"INT"
+			"linked_stat":"int"
 		},
 		"athletics":{
 			"display_name":"Athletics",
-			"linked_stat":"STR"
+			"linked_stat":"str"
 		},
 		"deception":{
 			"display_name":"Deception",
-			"linked_stat":"CHA"
+			"linked_stat":"cha"
 		},
 		"history":{
 			"display_name":"History",
-			"linked_stat":"INT"
+			"linked_stat":"int"
 		},
 		"insight":{
 			"display_name":"Insight",
-			"linked_stat":"WIS"
+			"linked_stat":"wis"
 		},
 		"intimidation":{
 			"display_name":"Intimidation",
-			"linked_stat":"CHA"
+			"linked_stat":"cha"
 		},
 		"investigation":{
 			"display_name":"Investigation",
-			"linked_stat":"INT"
+			"linked_stat":"int"
 		},
 		"medicine":{
 			"display_name":"Medicine",
-			"linked_stat":"WIS"
+			"linked_stat":"wis"
 		},
 		"nature":{
 			"display_name":"Nature",
-			"linked_stat":"INT"
+			"linked_stat":"int"
 		},
 		"perception":{
 			"display_name":"Perception",
-			"linked_stat":"WIS"
+			"linked_stat":"wis"
 		},
 		"performance":{
 			"display_name":"Performance",
-			"linked_stat":"CHA"
+			"linked_stat":"cha"
 		},
 		"persuasion":{
 			"display_name":"Persuasion",
-			"linked_stat":"CHA"
+			"linked_stat":"cha"
 		},
 		"religion":{
 			"display_name":"Religion",
-			"linked_stat":"INT"
+			"linked_stat":"int"
 		},
 		"sleight_of_hand":{
 			"display_name":"Sleight Of Hand",
-			"linked_stat":"DEX"
+			"linked_stat":"dex"
 		},
 		"stealth":{
 			"display_name":"Stealth",
-			"linked_stat":"DEX"
+			"linked_stat":"dex"
 		},
 		"survival":{
 			"display_name":"Survival",
-			"linked_stat":"WIS"
+			"linked_stat":"wis"
 		}
 	}
 }

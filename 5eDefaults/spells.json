@@ -6,9 +6,16 @@
     "cast_time": "1 action",
     "range": "120 ft.",
     "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
     "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
-
-    "Note:": "I should definitely parse the description for a dice number to let the user roll it.",
-    "IMPORTANT": "SCRAPE THE SPELLS ETC FROM 5ETOOLS!"
+    "higher_levels_description" : "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required" : "1"
+    }
   }
 }

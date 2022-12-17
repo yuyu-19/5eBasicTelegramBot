@@ -6,19 +6,28 @@ import os
 _defaultCharacterSheet = {}
 _classes = {}
 _spells = {}
+_spellsByLevel = {}
+_spellsByClass = {}
 def loadDefaultData(systemDataPath):
     global _defaultCharacterSheet
     _defaultCharacterSheet = json.load(open(os.path.join(systemDataPath, "sheetData.json")))
     #I won't check if all the skills reference an existing stat as I'm assuming valid system data.
     #TODO: Add other data, like items, spells, Monsters? etc.
-    #TODO: Use jsmin to remove comments.
     global _classes
     _classes = json.load(open(os.path.join(systemDataPath, "classes.json")))
     global _spells
     _spells = json.load(open(os.path.join(systemDataPath, "spells.json")))
-    #Let's try and parse the spells to find damage dice and upcast potential.
-    #TODO: Handle the above in preprocessing rather than on the fly. No reason to do it every time after all.
-    #Better idea: Literally just use 5etools' existing dataset for spells.
+    #TODO: Finish parsing with the scratch script
+    #Now that we have the spell array, let's create a couple of internal indexes.
+    #Specifically one to iterate over spells by levels and one over spells by class.
+    for spellID, spellData in _spells:
+        if str(spellData.spell_level) not in _spellsByLevel:
+            _spellsByLevel[str(spellData.spell_level)] = {}
+        _spellsByLevel[str(spellData.spell_level)][spellID] = spellData
+        for castingClass in spellData.classes:
+            if castingClass not in _spellsByClass:
+                _spellsByClass[castingClass] = {}
+            _spellsByClass[castingClass][str(spellData.spell_level)][spellID] = spellData
 
 
 def getDefaultStats():
@@ -36,6 +45,21 @@ def getSpells():
 
 def getSpell(spellID):
     return copy.deepcopy(_spells[spellID])
+
+def getSpellsByLevel(spellLevel):
+    return copy.deepcopy(_spellsByLevel[spellLevel])
+
+def getSpellsByClass(castingClass):
+    return copy.deepcopy(_spellsByClass[castingClass])
+
+def getSpellsByClassAndLevel(castingClass, spellLevel):
+    return copy.deepcopy(_spellsByClass[castingClass][spellLevel])
+
+def getClassLevelFeatures(classID, level):
+    return copy.deepcopy(_classes[classID]["features_by_level"][level])
+def getClassData(classID):
+    return copy.deepcopy(_classes[classID])
+
 
 """
 Sample stat:
