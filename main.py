@@ -3,30 +3,23 @@ import json
 import logging
 import os
 
-import commandHandlers
+#TODO: Isolate all telegram shit to its own class, so it can easily be swapped out for something else
+#TODO: Update core database data only once the user is done inputting it (and just update it in general lmao)
+
+#TODO: idea: create a messageHandler per every userID, putting them in a dict
+#This way incoming messages can be redirected to the correct handler
+
 from telegram.ext import Updater, Dispatcher
 from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-import SystemDataProvider
-from database import Database
-
-def registerHandlers(dispatcher: Dispatcher):
-
-    echo_handler = MessageHandler(Filters.text & (~Filters.command), commandHandlers.messageHandler_echo)
-    dispatcher.add_handler(echo_handler)
-
-    # Register all commandHandlers listed in the file
-    handlerPrefix = "commandHandler_"
-
-    method_list = [func for func in dir(commandHandlers) if callable(getattr(commandHandlers, func)) and func.startswith(handlerPrefix)]
-    for handlerName in method_list:
-        dispatcher.add_handler(CommandHandler(handlerName[len(handlerPrefix):len(handlerName)], getattr(commandHandlers, handlerName)))
-
-
-
+import systemDataProvider
+import database
+from messaging.consoleConversation import ConsoleConversation, inputLoop
+from messaging.telegramConversation import TelegramConversation
+import messaging.telegramConversation
 
 if __name__ == '__main__':
     # Logging config
@@ -50,15 +43,13 @@ if __name__ == '__main__':
     # Is there an existing database file? If so, load it
     databasePath = configData["databasePath"]
     if os.path.isfile(databasePath):
-        database = Database(databasePath)
+        database.initDB(databasePath)
     else:
-        database = Database()
+        database.initDB(databasePath)
 
     systemDataPath = configData["systemDataPath"]
-    SystemDataProvider.loadDefaultData(systemDataPath)
-
-    updater = Updater(token=configData["token"], use_context=True)
-    registerHandlers(updater.dispatcher)
-
-    updater.start_polling()
+    systemDataProvider.loadDefaultData(systemDataPath)
+    #messaging.telegramConversation.initProvider(configData["token"])
+    print("Starting inputloop...")
+    asyncio.run(messaging.consoleConversation.inputLoop(), debug=True)
 

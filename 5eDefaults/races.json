@@ -1,0 +1,103 @@
+{
+  "dwarf": {
+    "display_name": "Dwarf",
+    "default": {
+      "languages": [
+        "Common",
+        "Dwarvish"
+      ],
+      "ability_score_modifiers": {
+        "con": 2
+      },
+      "size": "medium",
+      "speed": 25,
+      "features": [
+        {
+          "id": "dwarven_resilience",
+          "display_name": "Dwarven Resilience",
+          "description": ""
+        },
+        {
+          "id": "stonecunning",
+          "display_name": "Stonecunning",
+          "description": ""
+        },
+        {
+          "id": "darkvision",
+          "display_name": "Darkvision",
+          "description": ""
+        }
+      ],
+      "proficiency": {
+        "weapon": [
+          "Battleaxe",
+          "Handaxe",
+          "Light Hammer",
+          "Warhammer"
+        ],
+        "skill": [
+          "history"
+        ]
+      },
+      "proficiency_choices": {
+        "tool": {
+          "display_name": "Tool Proficiency",
+          "options": [
+            "Smith's tools",
+            "Brewer's supplies",
+            "Mason's tools"
+          ]
+        },
+        "skill": {
+          "display_name": "Skill Proficiency",
+          "options": [
+            "arcana",
+            "history",
+            "insight"
+          ]
+        }
+      }
+    },
+    "subraces_choice": {
+      "display_name": "Subrace",
+      "options": [
+        {
+          "id": "hill",
+          "display_name": "Hill Dwarf",
+          "ability_score_modifiers": {
+            "wis": 1
+          },
+          "features": [
+            {
+              "id": "dwarven_toughness",
+              "display_name": "Dwarven Toughness",
+              "description": "AAAH"
+            }
+          ],
+          "proficiency_choices": {
+            "tool": {
+              "display_name": "Tool Proficiency",
+              "options": [
+                "Smith's tools",
+                "Brewer's supplies",
+                "Mason's tools"
+              ]
+            },
+            "skill": {
+              "display_name": "Skill Proficiency",
+              "options": [
+                "arcana",
+                "history",
+                "insight"
+              ]
+            }
+          }
+        },
+        {
+          "id": "mountain",
+          "display_name": "Mountain Dwarf"
+        }
+      ]
+    }
+  }
+}

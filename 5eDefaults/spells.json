@@ -1,21 +1,177 @@
 {
-  "example_spell":{
-    "display_name": "example spell",
+  "example_cantrip": {
+    "display_name": "example cantrip 1",
     "spell_level": 0,
-    "classes": ["wizard","cleric"],
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
     "cast_time": "1 action",
     "range": "120 ft.",
     "components": "S,V,M (something something)",
     "duration": "Instantaneous",
     "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
-    "higher_levels_description" : "At higher levels blah blah",
+    "higher_levels_description": "At higher levels blah blah",
     "cantrip_damage_scaling": {
       "5": "2d6",
       "7": "3d6"
     },
     "upcasting_data": {
       "scaling_amount": "1d6",
-      "additional_levels_required" : "1"
+      "additional_levels_required": "1"
+    }
+  },
+  "example_cantrip1": {
+    "display_name": "example cantrip 2",
+    "spell_level": 0,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_cantrip2": {
+    "display_name": "example cantrip 3",
+    "spell_level": 0,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_cantrip3": {
+    "display_name": "example cantrip 4",
+    "spell_level": 0,
+    "classes": [
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_spell1": {
+    "display_name": "1spell",
+    "spell_level": 1,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_spell2": {
+    "display_name": "2spell",
+    "spell_level": 1,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_spell3": {
+    "display_name": "3spell",
+    "spell_level": 1,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
+    }
+  },
+  "example_spell4": {
+    "display_name": "4spell",
+    "spell_level": 1,
+    "classes": [
+      "wizard",
+      "cleric"
+    ],
+    "cast_time": "1 action",
+    "range": "120 ft.",
+    "components": "S,V,M (something something)",
+    "duration": "Instantaneous",
+    "description": "This spell does XYZ, on a hit roll 200d6 psychic damage due to the pain of coding this bot",
+    "higher_levels_description": "At higher levels blah blah",
+    "cantrip_damage_scaling": {
+      "5": "2d6",
+      "7": "3d6"
+    },
+    "upcasting_data": {
+      "scaling_amount": "1d6",
+      "additional_levels_required": "1"
     }
   }
 }

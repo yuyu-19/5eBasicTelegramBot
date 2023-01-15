@@ -1,0 +1,98 @@
+{
+  "acolyte": {
+    "display_name": "Acolyte",
+    "skill_proficiency": [
+      "insight",
+      "religion"
+    ],
+    "languages_available": 2,
+    "inventory": {
+      "misc": [
+        {
+          "display_name": "Holy symbol",
+          "description": "A gift to you when you entered the priesthood.",
+          "associated_roll": "5d6"
+        },
+        "Prayer book/wheel",
+        "5 sticks of incense",
+        "Vestments",
+        "Common clothes"
+      ],
+      "weapon": [],
+      "armor": [],
+      "gold": 15
+    },
+    "feature": "Shelter of the Faithful: As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at\na temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle.",
+    //These are the fixed ones.
+    "proficiency": {
+      "tool": [
+        "Prayer tools (DEBUG)"
+      ],
+      "weapon": [],
+      "armor": []
+    },
+    "fluff_choices": {
+      "personality_trait": {
+        "display_name": "Personality Trait",
+        "options": [
+          "P-a",
+          "P-b",
+          "P-c"
+        ]
+      },
+      "ideal": {
+        "display_name": "Ideal",
+        "options": [
+          "I-a",
+          "I-b",
+          "I-c"
+        ]
+      },
+      "bond": {
+        "display_name": "Bond",
+        "options": [
+          "B-a",
+          "B-b",
+          "B-c"
+        ]
+      },
+      "flaw": {
+        "display_name": "Flaw",
+        "options": [
+          "F-a",
+          "F-b",
+          "F-c"
+        ]
+      }
+    },
+    "proficiency_choices": {
+      "tool": {
+        "display_name": "Tool Proficiency",
+        "amount": 1,
+        "options": [
+          "TP-a",
+          "TP-b",
+          "TP-c"
+        ]
+      },
+      "weapon": {
+        "display_name": "Weapon Proficiency",
+        "amount": 1,
+        "options": [
+          "WP-a",
+          "WP-b",
+          "WP-c"
+        ]
+      },
+      "armor": {
+        "display_name": "Armor Proficiency",
+        "amount": 1,
+        "options": [
+          "AP-a",
+          "AP-b",
+          "AP-c"
+        ]
+      }
+    }
+  }
+}
