@@ -125,10 +125,10 @@ class ConsoleConversation(UserConversation):
                 return trueOption.lower().find(userInput.lower()) == 0
 
 
-    async def requestInt(self, prompt:str, numMax:float = float("inf"), numMin:float = float("-inf")) -> int:
+    async def requestInt(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> int:
         while True:
             if numMax != float("inf") and numMin != float("-inf"):
-                chosenNumber = await self.requestNumber(prompt, numMax=int(numMax), numMin=int(numMin))
+                chosenNumber = await self.requestNumber(prompt, int(numMax), int(numMin))
             elif numMax != float("inf"):
                 chosenNumber = await self.requestNumber(prompt, numMax=int(numMax))
             elif numMin != float("-inf"):
@@ -140,7 +140,7 @@ class ConsoleConversation(UserConversation):
             else:
                 await self.show("Please specify an integer.")
 
-    async def requestNumber(self, prompt:str, numMax:float = float("inf"), numMin:float = float("-inf")) -> float:
+    async def requestNumber(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> float:
         await self.show(prompt)
         inf = float("inf")
         negInf = float("-inf")

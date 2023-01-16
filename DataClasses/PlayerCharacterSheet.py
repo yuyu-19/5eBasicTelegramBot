@@ -68,6 +68,64 @@ async def _askChoiceBlock(userConvo: UserConversation, data, allowRoll=False, al
     return userChoices
 
 
+async def requestItem(userConvo: UserConversation, maxPrice = float("inf")) -> dict:
+    newItem = dict()
+    itemTypes = ["armor", "weapon", "misc"]
+
+    itemType = await userConvo.chooseFromListOfStrings(itemTypes,
+                                                       "Which type of item would you like?")
+    newItem["type"] = itemType
+    newItem["price"] = await userConvo.requestNumber(
+        "What is the item's price in gold? (1 silver = 0.1 gold, 1 copper = 0.001 gold)", 0,
+        maxPrice)
+
+    newItem["display_name"] = await userConvo.requestCustomInput("What's the item's name?")
+    newItem["weight"] = await userConvo.requestCustomInput("How much does the item weigh in pounds?")
+    newItem["description"] = await userConvo.requestCustomInput("What's the item's description?")
+    match itemType:
+        case "misc":
+            newItem["associated_rolls"] = list()
+            if await userConvo.yesNo("Does the item have a roll associated with it?"):
+                newItem["associated_rolls"].append(await userConvo.requestCustomInput("What is the roll formula?"))
+                while await userConvo.yesNo("Would you like to add another roll?"):
+                    newItem["associated_rolls"].append(
+                        await userConvo.requestRollFormula("What is the roll formula?"))
+        case "weapon":
+            viableStats = systemDataProvider.getDefaultStats()
+            newItem["proficiency"] = await userConvo.yesNo("Are you proficient with the weapon?")
+            newItem["attack_stats"] = list()
+            chosenStatID = await userConvo.chooseFromDict(viableStats,
+                                                          "Which stat do you use to attack with this weapon?")
+            newItem["attack_stats"].append(chosenStatID)
+            viableStats.pop(chosenStatID)
+            while await userConvo.yesNo("Are you able to use a different stat to attack?") and len(
+                    viableStats) >= 1:
+                chosenStatID = await userConvo.chooseFromDict(viableStats, "Which stat?")
+                viableStats.pop(chosenStatID)
+                newItem["attack_stats"].append(chosenStatID)
+
+            if await userConvo.yesNo("Does the weapon have a modifier to hit?"):
+                newItem["attack_bonus"] = await userConvo.requestInt("What is it?")
+            else:
+                newItem["attack_bonus"] = 0
+            newItem["associated_rolls"] = list()
+
+            newItem["associated_rolls"].append(
+                await userConvo.requestRollFormula("What is the weapon's damage roll?"))
+            while await userConvo.yesNo("Would you like to add another roll?"):
+                newItem["associated_rolls"].append(
+                    await userConvo.requestRollFormula("What is the roll formula?"))
+
+        case "armor":
+            armorTypes = ["heavy", "medium", "light"]
+            newItem["armor_type"] = await userConvo.chooseFromListOfStrings(armorTypes, "What type of armor is it?")
+            newItem["base_AC"] = await userConvo.requestInt("What is it's base armor class?", 0)
+            if await userConvo.yesNo("Does it have a strength requirement?"):
+                newItem["str_req"] = await userConvo.requestInt("What is it?")
+            newItem["stealth_disad"] = await userConvo.yesNo("Does it impose disadvantage on stealth checks?")
+    return newItem
+
+
 class PCSheet(CharacterSheet):
     def __init__(self, creatorID, displayName):
         super().__init__(creatorID, displayName) #This initializes stats
@@ -95,6 +153,28 @@ class PCSheet(CharacterSheet):
             "armor":[],
             "gold": 0.0         #Since gold is the most commonly used item, everything else will scale around its value.
         }                       #1 silver is 1/10th, 1 copper is 1/100th, and so on.
+
+
+        #"misc":[
+        # {
+        #   "type":"misc",
+        #   "price": 0.34,
+        #   "display_name": "",
+        #   "description:"",
+        #   "weight": "",
+        #   IF MISC OR WEAPON
+        #   "associated_rolls": ["3d6","4d10"]
+        #   IF WEAPON
+        #   "proficiency": true,
+        #   "attack_stats": ["dex","str"]
+        #   "attack_bonus": 0
+        #   IF ARMOR
+        #   "armor_type": "light",
+        #   "base_AC": 14,
+        #   "str_req": 4,
+        #   "stealth_disad": false
+        # }
+        # ]
 
         for skillID, skill in self._skills.items():
             skill["proficiency_multiplier"] = 0
@@ -126,6 +206,7 @@ class PCSheet(CharacterSheet):
         #       }
         #   }     Each spell here only lists its ID and whether or not it's prepared.
         # },
+
 
 
     async def characterMancer(self, userConvo: UserConversation):
@@ -169,60 +250,13 @@ class PCSheet(CharacterSheet):
         else:
             self._inventory["gold"] = rollFormula(chosenClassData["starting_gold_roll"])
             await userConvo.show("You've been given " + str(self._inventory["gold"]) + " gold instead of your equipment.")
-            newItem = dict()
-            itemTypes = ["armor","weapon","misc","done"]
             while True:
                 await userConvo.show("You currently have " + str(self._inventory["gold"]) + " gold left.")
-                if not await userConvo.yesNo("Would you like to purchase an item?"):
+                if not await userConvo.yesNo("Would you like to purchase another item?"):
                     break
-
-                itemType = await userConvo.chooseFromListOfStrings(itemTypes,
-                                                            "Which type of item would you like?")
-                newItem["price"] = await userConvo.requestNumber("What is the item's price in gold? (1 silver = 0.1 gold, 1 copper = 0.001 gold)", numMin=0, numMax=self._inventory["gold"])
+                newItem = await requestItem(userConvo, self._inventory["gold"])
                 self._inventory["gold"] -= newItem["price"]
-
-                newItem["display_name"] = await userConvo.requestCustomInput("What's the item's name?")
-                newItem["weight"] = await userConvo.requestCustomInput("How much does the item weigh in pounds?")
-                newItem["description"] = await userConvo.requestCustomInput("What's the item's description?")
-                match itemType:
-                    case "misc":
-                        newItem["associated_rolls"] = list()
-                        if await userConvo.yesNo("Does the item have a roll associated with it?"):
-                            newItem["associated_rolls"].append(await userConvo.requestCustomInput("What is the roll formula?"))
-                            while await userConvo.yesNo("Would you like to add another roll?"):
-                                newItem["associated_rolls"].append(
-                                    await userConvo.requestRollFormula("What is the roll formula?"))
-                    case "weapon":
-                        viableStats = systemDataProvider.getDefaultStats()
-                        newItem["proficiency"] = await userConvo.yesNo("Are you proficient with the weapon?")
-                        newItem["attack_stats"] = list()
-                        chosenStatID = await userConvo.chooseFromDict(viableStats, "Which stat do you use to attack with this weapon?")
-                        newItem["attack_stats"].append(chosenStatID)
-                        viableStats.pop(chosenStatID)
-                        while await userConvo.yesNo("Are you able to use a different stat to attack?") and len(viableStats) >= 1:
-                            chosenStatID = await userConvo.chooseFromDict(viableStats, "Which stat?")
-                            viableStats.pop(chosenStatID)
-                            newItem["attack_stats"].append(chosenStatID)
-
-                        if await userConvo.yesNo("Does the weapon have a modifier to hit?"):
-                            newItem["attack_bonus"] = await userConvo.requestInt("What is it?")
-                        else:
-                            newItem["attack_bonus"] = 0
-                        newItem["associated_rolls"] = list()
-
-                        newItem["associated_rolls"].append(await userConvo.requestRollFormula("What is the weapon's damage roll?"))
-                        while await userConvo.yesNo("Would you like to add another roll?"):
-                            newItem["associated_rolls"].append(
-                                await userConvo.requestRollFormula("What is the roll formula?"))
-
-                    case "armor":
-                        armorTypes = ["heavy","medium","light"]
-                        newItem["armor_type"] = await userConvo.chooseFromListOfStrings(armorTypes, "What type of armor is it?")
-                        newItem["AC"] = await userConvo.requestInt("What is it's base armor class?", numMin=0)
-                        if await userConvo.yesNo("Does it have a strength requirement?"):
-                            newItem["str_req"] = await userConvo.requestInt("What is it?")
-                        newItem["stealth_disad"] = await userConvo.yesNo("Does it impose disadvantage on stealth checks?")
-
+                self._inventory[newItem["type"]].append(newItem)
 
 
         # </editor-fold>
@@ -321,7 +355,7 @@ class PCSheet(CharacterSheet):
         else:
             self._fluff["background"] = "custom"
             await userConvo.show("You have 2 languages or tool proficiencies available.")
-            toolProficienciesAmount = await userConvo.requestInt("How many tool proficiencies would you like?", numMin=0, numMax=2)
+            toolProficienciesAmount = await userConvo.requestInt("How many tool proficiencies would you like?", 0, 2)
 
             customProficiencyChoiceBlock = {
                 "skill": {
@@ -391,14 +425,14 @@ class PCSheet(CharacterSheet):
                         await userConvo.show(stat["display_name"] + " - " + str(stat["value"]))
                     while await userConvo.yesNo("Would you like to edit a stat?"):
                         chosenStatID = await userConvo.chooseFromDict(self._stats, "Which stat would you like to modify?")
-                        self._stats[chosenStatID]["value"] = await userConvo.requestInt("What new value would you like to assign?",numMin=0)
+                        self._stats[chosenStatID]["value"] = await userConvo.requestInt("What new value would you like to assign?",0)
                 case "saving throws" | "skills":      #The format is identical.
                     if chosenOption == "skills":
                         identifier = "skill"
-                        propertyToEdit = self._skills
+                        propertyToEdit:dict[str, dict[str,str|int]] = self._skills
                     else:
                         identifier = "saving throw"
-                        propertyToEdit = self._savingThrows
+                        propertyToEdit:dict[str, dict[str,str|int]] = self._savingThrows
                     for skillID, skill in propertyToEdit.items():
                         shownString = skill["display_name"] + " - "
                         shownString += str(self._stats[skill["linked_stat"]] + self._proficiencyValue * skill[
@@ -438,13 +472,44 @@ class PCSheet(CharacterSheet):
                 case "character fluff":
                     fluffOptions = []
                     for key, value in self._fluff.items():
-                        fluffOptions.append(key[0].upper() + key[1:] + "\n" + value)
-                    fluffOptions = ["Personality","Ideal","Bond","Flaw"]
+                        if key != "background":
+                            fluffOptions.append(key[0].upper() + key[1:] + "\n" + value)
                     chosenFluffOption = await userConvo.chooseFromListOfStrings(fluffOptions, "Please choose one.")
-                case "proficiencies":
-                    pass
-                case "inventory":
-                    pass
+                    chosenFluffOption = chosenFluffOption[:chosenFluffOption.find("\n")].strip()
+                    await userConvo.show(self._fluff[chosenFluffOption])
+                    if await userConvo.yesNo("Would you like to edit it?"):
+                        self._fluff[chosenFluffOption] = await userConvo.requestCustomInput("Please input the new value.")
+                case "proficiencies" | "inventory":
+                    if chosenOption == "proficiencies":
+                        identifier = "proficiency"
+                        propertyToEdit:dict[str, list|float] = self._proficiencies
+                    else:
+                        identifier = "item"
+                        propertyToEdit:dict[str, float] = self._inventory
+
+                    keyList = list(propertyToEdit.keys())
+                    for innerKey in keyList:
+                        if innerKey != "gold":
+                            await userConvo.show(innerKey[0].upper() + innerKey[1:])
+                            outputString = ""
+                            for proficiency in propertyToEdit[innerKey]:
+                                outputString += proficiency + ", "
+                            outputString = outputString[:len(outputString)-2]
+                            await userConvo.show(outputString)
+                        else:
+                            await userConvo.show("You have " + str(propertyToEdit[innerKey]) + " gold.")
+                            if await userConvo.yesNo("Would you like to change your gold?"):
+                                self._inventory["gold"] = await userConvo.requestNumber("Please input the new amount.")
+                    if await userConvo.yesNo("Would you like to add/remove a "+identifier+"?"):
+                        chosenType = keyList[await userConvo.requestInt("Please select which type of "+identifier+" would you like to edit.",1,len(keyList))-1]
+                        if await userConvo.yesNo("Would you like to add an entry or delete one?", "Add", "Delete"):
+                            if identifier == "item":
+                                propertyToEdit[chosenType].append(await requestItem(userConvo, self._inventory["gold"]))
+                            else:
+                                propertyToEdit[chosenType].append(await userConvo.requestCustomInput("Please input the new "+identifier+" you'd like to add."))
+                        else:
+                            propertyToEdit[chosenType].remove(await userConvo.chooseFromListOfStrings(propertyToEdit[chosenType],"Please choose a "+identifier+" to remove."))
+
                 case "spells":
                     #TODO: Check which spellcasting class the user has and ask them which one if multiple.
                     pass
@@ -676,7 +741,7 @@ class PCSheet(CharacterSheet):
             if maxPreparedSpells-currentlyPreparedSpells > 0:
                 await userConvo.show("You can still prepare " + str(maxPreparedSpells-currentlyPreparedSpells) + " spells.")
 
-            chosenSpellLevel = await userConvo.requestInt("What spell level would you like to change?", numMin=1, numMax=maxSpellLevel)
+            chosenSpellLevel = await userConvo.requestInt("What spell level would you like to change?", 1, maxSpellLevel)
             preparedSpellsInLevel = 0
 
             for _ in self.getPreparedSpells(classID, chosenSpellLevel, chosenSpellLevel):
