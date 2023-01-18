@@ -16,7 +16,8 @@ def loadDefaultData(systemDataPath):
     global _defaultCharacterSheetData
     _defaultCharacterSheetData = json.load(open(os.path.join(systemDataPath, "sheetData.json")))
     #I won't check if all the skills reference an existing stat as I'm assuming valid system data.
-    #TODO: Add other data, like items, spells, Monsters? etc.
+
+    #TODO: Add other data etc.
     global _classes
     _classes = json.load(open(os.path.join(systemDataPath, "classes.json")))
     global _spells
@@ -151,7 +152,7 @@ Sample spell:
 }
 """
 
-def rollFormula(formula):
+def rollFormula(formula:str) -> int:
     if "+" in formula:
         total = int(formula[formula.find("+") + 1:])
         formula = formula[:formula.find("+")]

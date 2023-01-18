@@ -17,16 +17,13 @@ def inputLoop():
     userID = "console:" + input("Which userID would you like to be?\n") #UserIDs are in the format platform:ID to avoid overlap
     while True:
         line = input("Please type \"/start\" to begin a conversation.\n")
-        if " " in line:
-            command = line[1:line.index(" ")]
-        else:
-            command = line[1:]
+        command = line.strip()
         match command:
-            case "start":
+            case "/start" | "s":
                 print("Start!")
                 asyncio.run(createAndStartConversation(userID))
 
-            case "testRoll":    #TODO: Remove this. This is purely a testing function.
+            case "/testRoll":    #TODO: Remove this. This is purely a testing function.
                 formulaToTest = ""
                 wellFormed = False
                 while not wellFormed:
@@ -85,30 +82,30 @@ class ConsoleConversation(UserConversation):
         await self._user.startConversation(self)  # Hand control over to the userData class
         return True
     async def chooseFromListOfStrings(self, optionsAvailable: list, prompt: str) -> str:
-        if len(optionsAvailable) == 1:
-            await self.show(optionsAvailable[0])
-            return optionsAvailable[0]
         await self.show(prompt)
+        if len(optionsAvailable) == 1:
+            await self.show("Selecting the only option available: " + optionsAvailable[0])
+            return optionsAvailable[0]
 
         for option in optionsAvailable:
             await self.show(str(optionsAvailable.index(option)+1) + ") " + option[0].upper() + option[1:])
         return optionsAvailable[await self.requestInt("", numMin=1, numMax=len(optionsAvailable)) - 1]
 
     async def chooseFromListOfDict(self, optionsAvailable: list, prompt: str) -> dict: #Returns one dict out of all of them
-        if len(optionsAvailable) == 1:
-            await self.show(optionsAvailable[0]["display_name"])
-            return optionsAvailable[0]
         await self.show(prompt)
+        if len(optionsAvailable) == 1:
+            await self.show("Selecting the only option available: " + optionsAvailable[0]["display_name"])
+            return optionsAvailable[0]
 
         for choice in optionsAvailable:
             await self.show(str(optionsAvailable.index(choice)+1) + ") " + choice["display_name"])
         return optionsAvailable[await self.requestInt("", numMin=1, numMax=len(optionsAvailable)) - 1]
     async def chooseFromDict(self, optionsAvailable: dict, prompt: str) -> str: #Returns the key corresponding with the selected item
+        await self.show(prompt)
         if len(optionsAvailable) == 1:
             for key in optionsAvailable:
-                await self.show(optionsAvailable[key]["display_name"])
+                await self.show("Selecting the only option available: " + optionsAvailable[key]["display_name"])
                 return key
-        await self.show(prompt)
         keyList = list(optionsAvailable.keys())
         for key in keyList:
             await self.show(str(keyList.index(key)+1) + ") " + optionsAvailable[key]["display_name"])
@@ -117,18 +114,16 @@ class ConsoleConversation(UserConversation):
 
     async def yesNo(self,prompt:str, trueOption:str="Yes", falseOption:str="No") -> bool:
         await self.show(prompt)
-        await self.show(trueOption)
-        await self.show(falseOption)
         while True:
             userInput = await self.requestCustomInput(trueOption + " or " + falseOption + "?")
             if (trueOption.lower().find(userInput.lower()) == 0) ^ (falseOption.lower().find(userInput.lower()) == 0):
                 return trueOption.lower().find(userInput.lower()) == 0
 
 
-    async def requestInt(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> int:
+    async def requestInt(self, prompt:str, numMin:float = float("-inf"), numMax:float = float("inf")) -> int:
         while True:
             if numMax != float("inf") and numMin != float("-inf"):
-                chosenNumber = await self.requestNumber(prompt, int(numMax), int(numMin))
+                chosenNumber = await self.requestNumber(prompt, int(numMin), int(numMax))
             elif numMax != float("inf"):
                 chosenNumber = await self.requestNumber(prompt, numMax=int(numMax))
             elif numMin != float("-inf"):
@@ -140,8 +135,11 @@ class ConsoleConversation(UserConversation):
             else:
                 await self.show("Please specify an integer.")
 
-    async def requestNumber(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> float:
+    async def requestNumber(self, prompt:str, numMin:float = float("-inf"), numMax:float = float("inf")) -> float:
         await self.show(prompt)
+        if numMax == numMin:
+            await self.show("Selecting the only available option, " + str(numMin))
+            return float(numMin)
         inf = float("inf")
         negInf = float("-inf")
         if numMax < inf and numMin > negInf:
@@ -161,6 +159,8 @@ class ConsoleConversation(UserConversation):
                     userInput = float(userInput)
                 validNumber = True
                 if not (numMin <= userInput <= numMax): validNumber = False
+                if not validNumber:
+                    await self.show("Number out of range.")
             except:
                 await self.show("Not a valid number.")
         return userInput

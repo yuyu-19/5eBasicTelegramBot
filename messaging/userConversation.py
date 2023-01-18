@@ -32,10 +32,10 @@ class UserConversation:
     async def yesNo(self,prompt:str, trueOption:str="Yes", falseOption:str="No") -> bool:
         pass
 
-    async def requestInt(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> int:
+    async def requestInt(self, prompt:str, numMin:float = float("-inf"), numMax:float = float("inf")) -> int:
         pass
 
-    async def requestNumber(self, prompt:str, numMin:float = float("inf"), numMax:float = float("-inf")) -> float:
+    async def requestNumber(self, prompt:str, numMin:float = float("-inf"), numMax:float = float("inf")) -> float:
         pass
 
     async def show(self,prompt:str) -> bool:

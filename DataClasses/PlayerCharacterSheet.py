@@ -84,9 +84,9 @@ async def requestItem(userConvo: UserConversation, maxPrice = float("inf")) -> d
     newItem["description"] = await userConvo.requestCustomInput("What's the item's description?")
     match itemType:
         case "misc":
-            newItem["associated_rolls"] = list()
             if await userConvo.yesNo("Does the item have a roll associated with it?"):
-                newItem["associated_rolls"].append(await userConvo.requestCustomInput("What is the roll formula?"))
+                newItem["associated_rolls"] = list()
+                newItem["associated_rolls"].append(await userConvo.requestRollFormula("What is the roll formula?"))
                 while await userConvo.yesNo("Would you like to add another roll?"):
                     newItem["associated_rolls"].append(
                         await userConvo.requestRollFormula("What is the roll formula?"))
@@ -130,18 +130,20 @@ class PCSheet(CharacterSheet):
     def __init__(self, creatorID, displayName):
         super().__init__(creatorID, displayName) #This initializes stats
         self._maxHPRaw:int = 0  #This is the max HP without the constitution bonus
-        self._proficiencyValue:int = 0
         self._proficiencies:dict[str, list[str]] = {
             "tool": [],
             "weapon": [],
             "armor" : []
         }
         self._fluff:dict[str, str] = {
-            "personality": "",
+            "personality_trait": "",
             "ideal": "",
             "bond": "",
             "flaw" : "",
-            "background" : ""
+            "background" : "",
+            "eye_color": "",
+            "height":"",
+            "age": ""
         }
         self._hpDie:str = ""
 
@@ -162,7 +164,7 @@ class PCSheet(CharacterSheet):
         #   "display_name": "",
         #   "description:"",
         #   "weight": "",
-        #   IF MISC OR WEAPON
+        #   IF MISC (OPTIONAL) OR WEAPON
         #   "associated_rolls": ["3d6","4d10"]
         #   IF WEAPON
         #   "proficiency": true,
@@ -181,23 +183,24 @@ class PCSheet(CharacterSheet):
 
         self._characterLevel = 0
 
-        self._allClassesLevelData = {}
+        self._allClassesLevelData: dict[str, dict|str|int] = {}
         #"fighter": {
         #   "levels": 1,
         #   "subclass_id": "",
-        #   "subclass_name": "",
+        #   "subclass_display_name": "",
         #},
         # "wizard": {
         #   "levels": 2,
         #   "max_spell_level": 1
         #   "cantrips_known": 4
         #   "subclass_id": "evocation",
-        #   "subclass_name": "Evocation Study",
+        #   "subclass_display_name": "Evocation Study",
         #   "spells_available": {
         #       "0": {
         #           "something_something" : {
         #               "display_name": "thing",
-        #               "prepared": True
+        #               "prepared": True,
+        #               "always_prepared": False
         #           }
         #       },
         #       "1": {
@@ -234,8 +237,10 @@ class PCSheet(CharacterSheet):
         if classID not in self._allClassesLevelData:
             self._allClassesLevelData[classID] = dict()
         self._allClassesLevelData[classID]["levels"] = 1
-        self._allClassesLevelData[classID]["subclass_id"] = None
-        self._allClassesLevelData[classID]["subclass_name"] = None
+        self._allClassesLevelData[classID]["display_name"] = chosenClassData["display_name"]
+        self._allClassesLevelData[classID]["subclass_id"] = ""
+        self._allClassesLevelData[classID]["subclass_display_name"] = ""
+
 
 
         # <editor-fold desc="Class Equipment">
@@ -326,7 +331,6 @@ class PCSheet(CharacterSheet):
 
             await userConvo.show("You have the following stat scores available: " + str(scoreArray))
             for statID, stat in self._stats.items():
-                print(stat)
                 if stat["fixed_modifier"] != 0:
                     await userConvo.show("You have a " + str(stat["fixed_modifier"]) + " bonus to this stat.")
                 stat["value"] = int(await userConvo.chooseFromListOfStrings(scoreArray, "Which score would you like to use for " + stat["display_name"]))
@@ -345,6 +349,10 @@ class PCSheet(CharacterSheet):
 
             self._applyProficiencyBlock(chosenBackgroundData["proficiency"])
             await self._applyFluffChoiceBlock(userConvo, chosenBackgroundData["fluff_choices"])
+            for key, data in self._fluff.items():
+                if data == "":
+                    self._fluff[key] = await userConvo.requestCustomInput("Please input the character's " + key)
+
             await self._applyProficiencyChoiceBlock(userConvo, chosenBackgroundData["proficiency_choices"])
 
             availableLanguages = getAllLanguages()
@@ -409,23 +417,35 @@ class PCSheet(CharacterSheet):
         await self.levelUp(userConvo, classID)
 
     async def startUserConversation(self, userConvo: UserConversation):
-        #TODO: THIS
-        await userConvo.show("HEY, WE DID IT")
-        userFinished = False
-        options = ["Stats", "Skills", "Saving throws", "Features", "Character fluff", "Proficiencies", "Inventory"]
+        #TODO: TEST ALL THIS
+        await userConvo.show("Character: " + self.display_name)
+        for key, value in self._allClassesLevelData.items():
+            await userConvo.show(str(value["levels"]) + " levels in " + value["display_name"])
+            if "subclass_id" in value and value["subclass_id"] != "":
+                await userConvo.show("Subclass: " + value["subclass_display_name"])
+            if "spells_available" in value:
+                await userConvo.show("Cantrips known: " + str(value["cantrips_known"]))
+                await userConvo.show("Maximum spell level: " + str(value["max_spell_level"]))
 
+        userFinished = False
+        rootOptions = ["stats", "skills", "saving throws", "features", "character fluff", "proficiencies", "inventory", "level Up"]
         for classID in self._allClassesLevelData:
             if "spells_available" in self._allClassesLevelData[classID]:
-                options.append("Spells")
+                rootOptions.insert(4,"spells")
+                break
         while not userFinished:
-            chosenOption = (await userConvo.chooseFromListOfStrings(options, "What would you like to view/edit?")).lower()
+            chosenOption = (await userConvo.chooseFromListOfStrings(rootOptions, "What would you like to view/edit/roll?")).lower()
             match chosenOption:
                 case "stats":
                     for statID, stat in self._stats.items():
                         await userConvo.show(stat["display_name"] + " - " + str(stat["value"]))
-                    while await userConvo.yesNo("Would you like to edit a stat?"):
-                        chosenStatID = await userConvo.chooseFromDict(self._stats, "Which stat would you like to modify?")
-                        self._stats[chosenStatID]["value"] = await userConvo.requestInt("What new value would you like to assign?",0)
+                    match await userConvo.chooseFromListOfStrings(["edit","roll","exit"], "Choose an option."):
+                        case "edit":
+                            chosenStatID = await userConvo.chooseFromDict(self._stats, "Which stat would you like to modify?")
+                            self._stats[chosenStatID]["value"] = await userConvo.requestInt("What new value would you like to assign?", 0)
+                        case "roll":
+                            chosenStatID = await userConvo.chooseFromDict(self._stats, "Which stat would you like to roll?")
+                            await userConvo.show("You rolled " + str(self.rollStat(chosenStatID)))
                 case "saving throws" | "skills":      #The format is identical.
                     if chosenOption == "skills":
                         identifier = "skill"
@@ -433,88 +453,164 @@ class PCSheet(CharacterSheet):
                     else:
                         identifier = "saving throw"
                         propertyToEdit:dict[str, dict[str,str|int]] = self._savingThrows
-                    for skillID, skill in propertyToEdit.items():
-                        shownString = skill["display_name"] + " - "
-                        shownString += str(self._stats[skill["linked_stat"]] + self._proficiencyValue * skill[
+                    for propertyID, PROPERTY in propertyToEdit.items():
+                        shownString = PROPERTY["display_name"] + " (" +PROPERTY["linked_stat"]+ ")" " - "
+                        shownString += str(self.getStatModifier(PROPERTY["linked_stat"]) + self._proficiencyValue * PROPERTY[
                             "proficiency_multiplier"])  #There's something wonky with type hints. TODO: Fix it?
-                        if skill["proficiency_multiplier"] == 1:
+                        if PROPERTY["proficiency_multiplier"] == 1:
                             shownString += " - Proficient"
-                        elif skill["proficiency_multiplier"] == 2:
+                        elif PROPERTY["proficiency_multiplier"] == 2:
                             shownString += " - Expert"
                         await userConvo.show(shownString)
-
-                    while await userConvo.yesNo("Would you like to edit a "+identifier+"'s proficiency level?"):
-                        chosenSkillID = await userConvo.chooseFromDict(propertyToEdit,
-                                                                       "Which "+identifier+" would you like to modify?")
-                        options = list("none, proficient, expert")
-                        chosenProficiencyLevel = await userConvo.chooseFromListOfStrings(options,
-                                                                                         "What proficiency level would you like?")
-                        propertyToEdit[chosenSkillID]["proficiency_multiplier"] = options.index(chosenProficiencyLevel)
-                case "features":
-                    if await userConvo.yesNo("Would you like to add a new feature or view/edit an existing one?", "Create new", "Choose existing"):
-                        newFeature = dict()
-                        newFeature["id"] = "custom_feature"
-                        newFeature["display_name"] = await userConvo.requestCustomInput("Give it a name.")
-                        newFeature["description"] = await userConvo.requestCustomInput("Give it a description.")
-                        self._features.append(newFeature)
-                    else:
-                        chosenFeature = await userConvo.chooseFromListOfDict(self._features, "Select a feature.")
-                        await userConvo.show(chosenFeature["display_name"])
-                        await userConvo.show(chosenFeature["description"])
-                        if await userConvo.yesNo("Would you like to modify it?"):
-                            if await userConvo.yesNo("Would you like to delete it?"):
-                                self._features.remove(chosenFeature)
+                    match await userConvo.chooseFromListOfStrings(["edit", "roll", "exit"], "Choose an option."):
+                        case "edit":
+                            chosenID = await userConvo.chooseFromDict(propertyToEdit,"Which "+identifier+" would you like to modify?")
+                            options = ["none", "proficient"]
+                            if identifier == "skill":
+                                options.append("expert")
+                            chosenProficiencyLevel = await userConvo.chooseFromListOfStrings(options,"What proficiency level would you like?")
+                            propertyToEdit[chosenID]["proficiency_multiplier"] = options.index(chosenProficiencyLevel)
+                        case "roll":
+                            chosenID = await userConvo.chooseFromDict(propertyToEdit,"Which "+identifier+" would you like to roll?")
+                            if identifier == "skill":
+                                await userConvo.show("You rolled " + str(self.rollSkill(chosenID)))
                             else:
-                                if await userConvo.yesNo("Would you like to edit its name or description?", "Name", "Description"):
-                                    chosenFeature["display_name"] = await userConvo.requestCustomInput("Please input a new name.")
-                                else:
-                                    chosenFeature["description"] = await userConvo.requestCustomInput("Please input a new description.")
+                                await userConvo.show("You rolled " + str(self.rollSavingThrow(chosenID)))
+
+                case "features":
+                    featuresWithRolls = list()
+                    await userConvo.show("Available features:")
+                    for feature in self._features:
+
+                        if "associated_rolls" in feature:
+                            await userConvo.show(feature["display_name"] +
+                                                 "\n" + feature["description"]+
+                                                 "\n" + "Associated rolls:" + str(feature["associated_rolls"]))
+                            featuresWithRolls.append(feature)
+                        else:
+                            await userConvo.show(feature["display_name"] +
+                                                 "\n" + feature["description"])
+
+                    options = ["add","edit","delete","exit"]
+                    if len(featuresWithRolls) > 0:
+                        options.insert(2, "roll")
+
+                    chosenFeatureOption = await userConvo.chooseFromListOfStrings(options,"Choose an option.")
+                    match chosenFeatureOption:
+                        case "add":
+                            newFeature = dict()
+                            newFeature["id"] = "custom_feature"
+                            newFeature["display_name"] = await userConvo.requestCustomInput("Give it a name.")
+                            newFeature["description"] = await userConvo.requestCustomInput("Give it a description.")
+
+                            if await userConvo.yesNo("Does the feature have a roll associated with it?"):
+                                newFeature["associated_rolls"] = list()
+                                newFeature["associated_rolls"].append(await userConvo.requestRollFormula("What is the roll formula?"))
+                                while await userConvo.yesNo("Would you like to add another roll?"):
+                                    newFeature["associated_rolls"].append(
+                                        await userConvo.requestRollFormula("What is the roll formula?"))
+
+                            self._features.append(newFeature)
+                        case "delete" | "edit" | "roll":
+                            if chosenFeatureOption == "roll":
+                                chosenFeature = await userConvo.chooseFromListOfDict(featuresWithRolls, "Select a feature.")
+                            else:
+                                chosenFeature = await userConvo.chooseFromListOfDict(self._features, "Select a feature.")
+                            await userConvo.show(chosenFeature["display_name"] + "\n" + chosenFeature["description"])
+
+                            match chosenFeatureOption:
+                                case "delete":
+                                    if await userConvo.yesNo("Are you sure you'd like to delete this feature?"):
+                                        self._features.remove(chosenFeature)
+                                case "edit":
+                                    if await userConvo.yesNo("Would you like to edit its name or description?", "Name", "Description"):
+                                        chosenFeature["display_name"] = await userConvo.requestCustomInput("Please input a new name.")
+                                    else:
+                                        chosenFeature["description"] = await userConvo.requestCustomInput("Please input a new description.")
+                                case "roll":
+                                    chosenRoll = await userConvo.chooseFromListOfStrings(chosenFeature["associated_rolls"], "Which value would you like to roll?")
+                                    await userConvo.show("You rolled " + str(rollFormula(chosenRoll)))
                 case "character fluff":
-                    fluffOptions = []
+
                     for key, value in self._fluff.items():
                         if key != "background":
-                            fluffOptions.append(key[0].upper() + key[1:] + "\n" + value)
-                    chosenFluffOption = await userConvo.chooseFromListOfStrings(fluffOptions, "Please choose one.")
-                    chosenFluffOption = chosenFluffOption[:chosenFluffOption.find("\n")].strip()
-                    await userConvo.show(self._fluff[chosenFluffOption])
-                    if await userConvo.yesNo("Would you like to edit it?"):
+                            await userConvo.show(key[0].upper() + key[1:] + "\n" + value)
+                    if await userConvo.yesNo("Would you like to edit one?"):
+                        chosenFluffOption = (await userConvo.chooseFromListOfStrings(list(self._fluff.keys()), "Please choose one.")).lower()
                         self._fluff[chosenFluffOption] = await userConvo.requestCustomInput("Please input the new value.")
                 case "proficiencies" | "inventory":
                     if chosenOption == "proficiencies":
+                        await userConvo.show("Here are your current proficiencies:")
                         identifier = "proficiency"
                         propertyToEdit:dict[str, list|float] = self._proficiencies
                     else:
+                        await userConvo.show("Here's your current inventory:")
                         identifier = "item"
                         propertyToEdit:dict[str, float] = self._inventory
 
-                    keyList = list(propertyToEdit.keys())
-                    for innerKey in keyList:
+                    for innerKey in propertyToEdit.keys():
                         if innerKey != "gold":
-                            await userConvo.show(innerKey[0].upper() + innerKey[1:])
                             outputString = ""
-                            for proficiency in propertyToEdit[innerKey]:
-                                outputString += proficiency + ", "
+                            for singleObject in propertyToEdit[innerKey]:
+                                if isinstance(singleObject, dict):
+                                    outputString += singleObject["display_name"] + ", "
+                                else:
+                                    outputString += singleObject + ", "
+                            outputString = outputString[:len(outputString)-2]
+                            await userConvo.show(innerKey[0].upper() + innerKey[1:] + "\n"+outputString)
+                    options = ["add", "remove","edit", "exit"]
+
+                    if identifier=="item":
+                        itemsWithAssociatedRolls = list()
+                        for itemType,items in self._inventory.items():
+                            if itemType != "gold":
+                                for item in items:
+                                    if "associated_rolls" in item:
+                                        itemsWithAssociatedRolls.append(item)
+
+                        if len(itemsWithAssociatedRolls) > 0:
+                            options.insert(2,"Roll")
+
+                    match await userConvo.chooseFromListOfStrings(options, "Choose an option."):    #TODO: ADD ITEM EDITING, SPLIT THEM INTO THEIR OWN CLASS, AND EDIT GOLD.
+                        case "add":
+                            chosenType = await userConvo.chooseFromListOfStrings(list(propertyToEdit.keys()), "Please select which type of " + identifier + " would you like to add.")
+                            if identifier == "item":
+                                propertyToEdit[chosenType].append(await requestItem(userConvo))
+                            else:
+                                propertyToEdit[chosenType].append(await userConvo.requestCustomInput("Please input the new " + identifier + " you'd like to add."))
+                        case "remove":
+                            chosenType = await userConvo.chooseFromListOfStrings(list(propertyToEdit.keys()), "Please select which type of " + identifier + " would you like to remove.")
+                            propertyToEdit[chosenType].remove(await userConvo.chooseFromListOfStrings(propertyToEdit[chosenType], "Please choose a " + identifier + " to remove."))
+                        case "edit":
+                            chosenType = await userConvo.chooseFromListOfStrings(list(propertyToEdit.keys()), "Please select which type of " + identifier + " would you like to remove.")
+                            chosenItem = await userConvo.chooseFromListOfDict(propertyToEdit[chosenType], "Please choose an item.")
+                        case "roll":
+                            chosenItem = await userConvo.chooseFromListOfDict(itemsWithAssociatedRolls, "Please choose an item.")
+                            chosenRoll = await userConvo.chooseFromListOfStrings(chosenItem["associated_rolls"], "What would you like to roll?")
+                            await userConvo.show(str(rollFormula(chosenRoll)))
+                case "spells":
+                    spellCastingClassesIDs = list()
+                    for key, value in self._allClassesLevelData.items():
+                        if "spells_available" in value:
+                            spellCastingClassesIDs.append(key)
+                    chosenClassID = await userConvo.chooseFromListOfStrings(spellCastingClassesIDs, "Choose a class.")
+                    alwaysPrepared = self.getAlwaysPreparedSpellsByLevel(chosenClassID)
+                    if len(alwaysPrepared) > 0:
+                        await userConvo.show("Your always prepared spells are:")
+                        for levelNumber, levelSpells in alwaysPrepared.items():
+                            await userConvo.show("Spell level " + levelNumber)
+                            outputString = ""
+                            for spell in levelSpells:
+                                outputString += spell["display_name"] + ", "
                             outputString = outputString[:len(outputString)-2]
                             await userConvo.show(outputString)
-                        else:
-                            await userConvo.show("You have " + str(propertyToEdit[innerKey]) + " gold.")
-                            if await userConvo.yesNo("Would you like to change your gold?"):
-                                self._inventory["gold"] = await userConvo.requestNumber("Please input the new amount.")
-                    if await userConvo.yesNo("Would you like to add/remove a "+identifier+"?"):
-                        chosenType = keyList[await userConvo.requestInt("Please select which type of "+identifier+" would you like to edit.",1,len(keyList))-1]
-                        if await userConvo.yesNo("Would you like to add an entry or delete one?", "Add", "Delete"):
-                            if identifier == "item":
-                                propertyToEdit[chosenType].append(await requestItem(userConvo, self._inventory["gold"]))
-                            else:
-                                propertyToEdit[chosenType].append(await userConvo.requestCustomInput("Please input the new "+identifier+" you'd like to add."))
-                        else:
-                            propertyToEdit[chosenType].remove(await userConvo.chooseFromListOfStrings(propertyToEdit[chosenType],"Please choose a "+identifier+" to remove."))
 
-                case "spells":
-                    #TODO: Check which spellcasting class the user has and ask them which one if multiple.
-                    pass
-            userFinished = await userConvo.yesNo("Are you finished?")
-        pass
+                    await self.prepareSpells(chosenClassID, userConvo)
+                case "level up":
+                    #This would be swapped to a choice for multiclassing, but since we're not supporting it, we don't.
+                    if await userConvo.yesNo("Are you sure you'd like to level up? This cannot be undone."):
+                        await self.levelUp(userConvo, list(self._allClassesLevelData.keys())[0])
+            userFinished = await userConvo.yesNo("Are you finished editing this character?")
 
     #This function parses the given race data and applies its properties to the character
     async def _applyRaceData(self, userConvo:UserConversation,raceData):
@@ -596,6 +692,7 @@ class PCSheet(CharacterSheet):
 
         levelData = getClassLevelData(classID, self._characterLevel)
         selectedClassLevelData = self._allClassesLevelData[classID]
+
         if "spell_slots" in levelData:
             if "spells_available" not in selectedClassLevelData:
                 selectedClassLevelData["spells_available"] = dict()
@@ -608,7 +705,6 @@ class PCSheet(CharacterSheet):
                     selectedClassLevelData["spells_available"]["spell_slot_max"] = spellSlotArray[spellLevel-1]
 
             selectedClassLevelData["max_spell_level"] = len(spellSlotArray)
-
             selectedClassLevelData["cantrips_known"] = levelData["cantrips_known"]
             while len(selectedClassLevelData["spells_available"]["0"]) < levelData["cantrips_known"]:
                 #Character has less cantrips available than he should.
@@ -616,7 +712,6 @@ class PCSheet(CharacterSheet):
 
 
             # If the user is leveling a spellcasting class, prepare additional spells according to level/stat changes.
-            await self.prepareSpells(classID, userConvo)
             if classID == "wizard":  #Learns 2 spells per level
                 for i in range(2):
                     await self.chooseSpellToLearn(classID, userConvo)
@@ -625,7 +720,7 @@ class PCSheet(CharacterSheet):
                 maxSpellLevel = spellcastingClassData["max_spell_level"]
                 for spellID in getSpellsByClassAndLevel(classID, maxSpellLevel):
                     self.learnSpell(classID, spellID)
-
+            await self.prepareSpells(classID, userConvo)
 
         if "features" in levelData:
             for feature in levelData["features"]:
@@ -639,7 +734,7 @@ class PCSheet(CharacterSheet):
                 if choiceID == "subclass":
                     choiceResult = choiceResults[0]  #User cannot take multiple subclasses.
                     selectedClassLevelData["subclass_id"] = choiceResult["subclass_id"]
-                    selectedClassLevelData["subclass_name"] = choiceResult["display_name"]
+                    selectedClassLevelData["subclass_display_name"] = choiceResult["display_name"]
                 for chosenFeature in choiceResults:
                     self._features.append(chosenFeature)
 
@@ -706,6 +801,8 @@ class PCSheet(CharacterSheet):
         maxSpellLevel = spellcastingClassData["max_spell_level"]
         chosenSpellLevel = await userConvo.requestInt("From what level would you like to learn a spell from?", 1, maxSpellLevel)
         availableSpells = getSpellsByClassAndLevel(classID, chosenSpellLevel)
+        if str(chosenSpellLevel) not in spellcastingClassData["spells_available"]:
+            spellcastingClassData["spells_available"][str(chosenSpellLevel)] = dict()
         for key in spellcastingClassData["spells_available"][str(chosenSpellLevel)]:
             availableSpells.pop(key) #Remove the ones the character already knows.
 
@@ -731,20 +828,24 @@ class PCSheet(CharacterSheet):
                         currentlyPreparedSpells += 1
 
         doneChanging = False
-        while not doneChanging:
-            await userConvo.show("Your currently prepared leveled spells are:")
-            for spellLevel, spellLevelData in self.getPreparedSpells(classID, minLevel=1).items():
-                await userConvo.show("Level " + spellLevel + ":")
-                for spellID, spellData in spellLevelData:
-                    await userConvo.show(spellData["display_name"])
 
+        await userConvo.show("Your currently prepared leveled spells are:")
+        for spellLevel, spellLevelData in self.getNotAlwaysPreparedSpellsByLevel(classID, minLevel=1).items():
+            await userConvo.show("Level " + spellLevel + ":")
+            outputString = ""
+            for spellID, spellData in spellLevelData.items():
+                outputString += spellData["display_name"] + ", "
+            outputString = outputString[:len(outputString) - 2]
+            await userConvo.show(outputString)
+
+        while not doneChanging:
             if maxPreparedSpells-currentlyPreparedSpells > 0:
                 await userConvo.show("You can still prepare " + str(maxPreparedSpells-currentlyPreparedSpells) + " spells.")
 
             chosenSpellLevel = await userConvo.requestInt("What spell level would you like to change?", 1, maxSpellLevel)
             preparedSpellsInLevel = 0
 
-            for _ in self.getPreparedSpells(classID, chosenSpellLevel, chosenSpellLevel):
+            for _ in self.getNotAlwaysPreparedSpellsByLevel(classID, chosenSpellLevel, chosenSpellLevel):
                 preparedSpellsInLevel += 1
 
             prepareOrUnprepare = False
@@ -758,37 +859,66 @@ class PCSheet(CharacterSheet):
 
             if prepareOrUnprepare:
                 #User wants to prepare a spell of that level.
-                spellsAvailable = self.getKnownSpells(classID, chosenSpellLevel, chosenSpellLevel)[chosenSpellLevel]
-                for key in self.getPreparedSpells(classID, chosenSpellLevel, chosenSpellLevel)[str(chosenSpellLevel)]:
-                    spellsAvailable.pop(key)        #Remove all already prepared spells
+                spellsAvailable = (self.getKnownSpells(classID, chosenSpellLevel, chosenSpellLevel))
+                spellsAvailable = spellsAvailable[str(chosenSpellLevel)]
+                preparedSpells = self.getNotAlwaysPreparedSpellsByLevel(classID, chosenSpellLevel, chosenSpellLevel)
+                if str(chosenSpellLevel) in preparedSpells:
+                    for key in preparedSpells[str(chosenSpellLevel)]:
+                        spellsAvailable.pop(key)        #Remove all already prepared spells
 
                 chosenSpell = await userConvo.chooseFromDict(spellsAvailable, "Which spell would you like to prepare?")
-                spellcastingClassData["spells_available"][chosenSpellLevel][chosenSpell]["prepared"] = True
+                spellcastingClassData["spells_available"][str(chosenSpellLevel)][chosenSpell]["prepared"] = True
                 currentlyPreparedSpells += 1
             else:
                 # User wants to UN-prepare a spell of that level.
-                spellsAvailable = self.getPreparedSpells(classID, chosenSpellLevel, chosenSpellLevel)[chosenSpellLevel]
+                spellsAvailable = self.getNotAlwaysPreparedSpellsByLevel(classID, chosenSpellLevel, chosenSpellLevel)[str(chosenSpellLevel)]
                 chosenSpell = await userConvo.chooseFromDict(spellsAvailable, "Which spell would you like to un-prepare?")
                 spellcastingClassData["spells_available"][str(chosenSpellLevel)][chosenSpell]["prepared"] = False
                 currentlyPreparedSpells -= 1
 
-
-
-            doneChanging = await userConvo.yesNo("Are you finished making changes?")
+            await userConvo.show("Your currently prepared leveled spells are:")
+            for spellLevel, spellLevelData in self.getNotAlwaysPreparedSpellsByLevel(classID, minLevel=1).items():
+                await userConvo.show("Level " + spellLevel + ":")
+                outputString = ""
+                for spellID, spellData in spellLevelData.items():
+                    outputString += spellData["display_name"] +", "
+                outputString = outputString[:len(outputString)-2]
+                await userConvo.show(outputString)
+            doneChanging = await userConvo.yesNo("Are you finished making changes to your prepared spells?")
+            # TODO: THIS DOESN'T PREPARE ALL SPELLS? ALSO IT CRASHES WHEN I SAY NO.
 
 
     def learnSpell(self, classID, spellID):
         spellData = systemDataProvider.getSpell(spellID)
         spellData["prepared"] = False
         #Only learn it if you don't know it yet
-        if spellID not in self._allClassesLevelData[classID]["spells_available"][spellData["spell_level"]]:
-            self._allClassesLevelData[classID]["spells_available"][spellData["spell_level"]][spellID] = spellData
-    def getPreparedSpells(self, classID, minLevel=0, maxLevel=9) -> dict:
+        if spellID not in self._allClassesLevelData[classID]["spells_available"][str(spellData["spell_level"])]:
+            self._allClassesLevelData[classID]["spells_available"][str(spellData["spell_level"])][spellID] = spellData
+    def getNotAlwaysPreparedSpellsByLevel(self, classID, minLevel=1, maxLevel=9) -> dict:
+        if minLevel < 1:
+            raise ValueError("Don't. Try. To. Get. Prepared. Cantrips. It. Makes. No. Sense.")
         knownSpellsByLevel = self.getKnownSpells(classID, minLevel, maxLevel)
         preparedSpellsByLevel = dict()
-        for spellLevel, spellLevelData in knownSpellsByLevel:
-            for spellID, spellData in spellLevelData:
-                if spellData["prepared"]:
+        for spellLevel, spellLevelData in knownSpellsByLevel.items():
+            for spellID, spellData in spellLevelData.items():
+                if "always_prepared" not in spellData:
+                    #Backwards compatibility measure
+                    spellData["always_prepared"] = False
+                if spellData["prepared"] and not spellData["always_prepared"]:
+                    if spellLevel not in preparedSpellsByLevel:
+                        preparedSpellsByLevel[spellLevel] = dict()
+                    preparedSpellsByLevel[spellLevel][spellID] = spellData
+        return preparedSpellsByLevel
+
+    def getAlwaysPreparedSpellsByLevel(self, classID, minLevel=1, maxLevel=9) -> dict:
+        knownSpellsByLevel = self.getKnownSpells(classID, minLevel, maxLevel)
+        preparedSpellsByLevel = dict()
+        for spellLevel, spellLevelData in knownSpellsByLevel.items():
+            for spellID, spellData in spellLevelData.items():
+                if "always_prepared" not in spellData:
+                    #Backwards compatibility measure
+                    spellData["always_prepared"] = False
+                if spellData["always_prepared"]:
                     if spellLevel not in preparedSpellsByLevel:
                         preparedSpellsByLevel[spellLevel] = dict()
                     preparedSpellsByLevel[spellLevel][spellID] = spellData
@@ -809,7 +939,7 @@ class PCSheet(CharacterSheet):
 
         for spellLevel, spellLevelData in self._allClassesLevelData[classID]["spells_available"].items():
             if minLevel <= int(spellLevel) <= maxLevel:
-                for spellID, spellData in spellLevelData:
+                for spellID, spellData in spellLevelData.items():
                     if spellLevel not in knownSpellsByLevel:
                         knownSpellsByLevel[spellLevel] = dict()
                     knownSpellsByLevel[spellLevel][spellID] = spellData

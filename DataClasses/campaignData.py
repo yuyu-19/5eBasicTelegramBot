@@ -30,8 +30,8 @@ class Campaign:
     async def chooseCharacterSheet(self, userConvo: UserConversation):
         userID = userConvo.getUserID()
         isDM = userID in self._DMs
-        accessibleCharacterSheets = self._getVisibleCharacterSheets(userID)
-        #TODO: CREATING A NEW CHARACTER SHEET, UPDATE THE CAMPAIGN DATA
+        accessibleCharacterSheets = self._getAccessibleCharacterSheets(userID)
+
         if len(accessibleCharacterSheets) == 0 or await userConvo.yesNo("Would you like to create a new character sheet or view an existing one?", trueOption="Create", falseOption="View"):
             if not isDM or await userConvo.yesNo("Would you like to create a PC-like NPC or a monster?", trueOption="PC-like", falseOption="Monster"):
                 chosenCharacterSheet = await PlayerCharacterSheet.createPCSheet(userConvo)
@@ -48,8 +48,7 @@ class Campaign:
         else:
             return
         await chosenCharacterSheet.startUserConversation(userConvo)
-
-        #TODO: Show the user the chosenCharacterSheet
+        await database.updateCampaign(self) #Update campaign data to save any edits the user made.
 
     def getCampaignIDAndName(self) -> dict:
         return {
@@ -79,7 +78,7 @@ class Campaign:
     def addDM(self, newDMID):
         self._DMs.append(newDMID)
 
-    def _getVisibleCharacterSheets(self, userID) -> list[CharacterSheet]:
+    def _getAccessibleCharacterSheets(self, userID) -> list[CharacterSheet]:
         isDM = userID in self._DMs
         availableCharacterSheets = []
         if isDM:
