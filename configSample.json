@@ -1,0 +1,6 @@
+{
+  "token": "TOKEN",
+  "logLevel": "ERROR",
+  "databasePath": "db.pickle",
+  "systemDataPath": "5eDefaults"
+}
