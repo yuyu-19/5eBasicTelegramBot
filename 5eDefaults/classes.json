@@ -1,55 +1,21 @@
 //TODO Add features through levels, as well as max spell slot level per level
 //PROFICIENCY IS CALCULATED BASED ON TOTAL LEVEL!
 {
-  //TODO Replace with a simple formula (floor((character_level-1)/4)+2)
   "wizard": {
     "hit_die": "d6",
     "display_name": "Wizard",
     //TODO: Make user choose between one of the two!
     "starting_gold_roll": "4d4",
     "inventory": {
-      //TODO: Change this to be accurate
       "misc": [
-        {
-          "display_name": "Holy symbol",
-          "description": "A gift to you when you entered the priesthood.",
-          "associated_rolls": [
-            "5d6"
-          ],
-          "price": 10,
-          "weight": "1 lb."
-        },
-        "Prayer book/wheel",
-        "5 sticks of incense",
-        "Vestments",
-        "Common clothes"
+        "Quarterstaff or Dagger",
+        "Component pouch or arcane focus",
+        "Scholar's pack or explorer's pack",
+        "Spellbook"
       ],
-      "weapon": [
-        {
-          "display_name": "Shortsword",
-          "proficient": true,
-          "attack_bonus": 0,
-          "attack_stats": [
-            "dex",
-            "str"
-          ],
-          "associated_rolls": [
-            "1d6",
-            "1d8"
-          ]
-        }
-      ],
-      "armor": [
-        {
-          "display_name": "Plate Armor",
-          "armor_type": "heavy",
-          //Only medium and light scale off of dex
-          "base_AC": 18,
-          "str_req": 15,
-          "stealth_disad": false
-        }
-      ],
-      "gold": 15
+      "weapon": [],
+      "armor": [],
+      "gold": 10
     },
     "saving_throws": [
       "int",
@@ -77,12 +43,6 @@
         ]
       }
     },
-    //ASIs are separate from other features as they always have the same name and description.
-    //The level up process first checks if there are any new features, then it checks for if there's an ASI.
-    //If the user is a spellcaster and EITHER their maximum amount of prepared spells changes (or their maximum spell level increases)
-    //They are reminded to rearrange their spells.
-    //TODO: MAKE THE SPELL SELECTION AS WELL
-    //TODO: MAKE THE LEVEL UP SCREEN, which includes: selecting features, showing features, selecting stats for ASI
     "levels": {
       "1": {
         "spell_slots": [
@@ -108,6 +68,7 @@
         "spell_slots": [
           3
         ],
+        "cantrips_known": 3,
         "features": [],
         "features_choices": {
           "subclass": {
@@ -123,8 +84,8 @@
               {
                 "subclass_id": "divination",
                 "id": "arcane_tradition",
-                "display_name": "School of Divination",
-                "description": "Something something divination, portent is overpowered"
+                "display_name": "School of Divination (NOT IMPLEMENTED, SAMPLE ONLY)",
+                "description": "NOT IMPLEMENTED"
               }
             ]
           }
@@ -135,6 +96,11 @@
               "id": "school_savant",
               "display_name": "Evocation Savant",
               "description": "Beginning when you select this school at 2nd level, the gold and time you must spend to copy an evocation spell into your spellbook is halved."
+            },
+            {
+              "id": "sculpt_spells",
+              "display_name": "Sculpt Spells",
+              "description": "Beginning at 2nd level, you can create pockets of relative safety within the effects of your evocation spells. When you cast an evocation spell that affects other creatures that you can see, you can choose a number of them equal to 1 + the spell’s level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage on a successful save."
             }
           ],
           "divination": [
@@ -146,71 +112,278 @@
           ]
         }
       },
-      "4": {},
       "3": {
+        "spell_slots": [
+          4,
+          2
+        ],
+        "cantrips_known": 3
+      },
+      "4": {
+        "spell_slots": [
+          4,
+          3
+        ],
         "features": [
           {
             "id": "asi",
             "display_name": "Ability Score Improvement",
             "description": "Gain +2 in one stat, or +1 to two stats."
           }
-        ]
+        ],
+        "cantrips_known": 4
+      },
+      "5": {
+        "spell_slots": [
+          4,
+          3,
+          2
+        ],
+        "cantrips_known": 4
+      },
+      "6": {
+        "spell_slots": [
+          4,
+          3,
+          3
+        ],
+        "features_subclass": {
+          "evocation": [
+            {
+              "id": "potent_cantrip",
+              "display_name": "Potent Cantrip",
+              "description": "Starting at 6th level, your damaging cantrips affect even creatures that avoid the brunt of the effect. When a creature succeeds on a saving throw against your cantrip, the creature takes half the cantrip’s damage (if any) but suffers no additional effect from the cantrip."
+            }
+          ],
+          "cantrips_known": 4
+        }
+      },
+      "7": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          1
+        ],
+        "cantrips_known": 4
+      },
+      "8": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          2
+        ],
+        "features": [
+          {
+            "id": "asi",
+            "display_name": "Ability Score Improvement",
+            "description": "Gain +2 in one stat, or +1 to two stats."
+          }
+        ],
+        "cantrips_known": 4
+      },
+      "9": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          1
+        ],
+        "cantrips_known": 4
+      },
+      "10": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2
+        ],
+        "features_subclass": {
+          "evocation": [
+            {
+              "id": "empowered_evocation",
+              "display_name": "Empowered Evocation",
+              "description": "Beginning at 10th level, you can add your Intelligence modifier to one damage roll of any wizard evocation spell you cast."
+            }
+          ],
+          "cantrips_known": 5
+        }
+      },
+      "11": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1
+        ],
+        "cantrips_known": 5
+      },
+      "12": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1
+        ],
+        "features": [
+          {
+            "id": "asi",
+            "display_name": "Ability Score Improvement",
+            "description": "Gain +2 in one stat, or +1 to two stats."
+          }
+        ],
+        "cantrips_known": 5
+      },
+      "13": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1
+        ],
+        "cantrips_known": 5
+      },
+      "14": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1
+        ],
+        "features_subclass": {
+          "evocation": [
+            {
+              "id": "overchannel",
+              "display_name": "Overchannel",
+              "description": "Starting at 14th level, you can increase the power of your simpler spells. When you cast a wizard spell of 1st through 5th level that deals damage, you can deal maxi mum damage with that spell. The first time you do so, you suffer no adverse effect. If you use this feature again before you finish a long rest, you take 2d12 necrotic damage for each level of the spell, immediately after you cast it. Each time you use this feature again before finishing a long rest, the necrotic damage per spell level increases by 1d12. This damage ignores resistance and immunity."
+            }
+          ]
+        },
+        "cantrips_known": 5
+      },
+      "15": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "cantrips_known": 5
+      },
+      "16": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1
+        ],
+        "features": [
+          {
+            "id": "asi",
+            "display_name": "Ability Score Improvement",
+            "description": "Gain +2 in one stat, or +1 to two stats."
+          }
+        ],
+        "cantrips_known": 5
+      },
+      "17": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "cantrips_known": 5
+      },
+      "18": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "features": [
+          {
+            "id": "spell_mastery",
+            "display_name": "Spell Mastery",
+            "description": "At 18th level, you have achieved such mastery over certain spells that you can cast them at will. Choose a 1st-level wizard spell and a 2nd-level wizard spell that are in your spellbook. You can cast spells at their lowest level without expending a spell slot when you have them prepared. If you want to cast either spell at a higher level, you expend a spell slot as normal. By spending 8 hours in study, you can exchange one or both of the spells you chose for different spells of the same levels."
+          }
+        ],
+        "cantrips_known": 5
+      },
+      "19": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "features": [
+          {
+            "id": "asi",
+            "display_name": "Ability Score Improvement",
+            "description": "Gain +2 in one stat, or +1 to two stats."
+          }
+        ],
+        "cantrips_known": 5
+      },
+      "20": {
+        "spell_slots": [
+          4,
+          3,
+          3,
+          3,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "features": [
+          {
+            "id": "signature_spell",
+            "display_name": "Signature Spell",
+            "description": "When you reach 20th level, you gain mastery over two powerful spells and can cast them with little effort. Choose two 3rd-level wizard spells in your spellbook as your signature spells. You always have these spells prepared, they don’t count against the number of spells you have prepared, and you can cast each of them once at 3rd level without expending a spell slot. When you do so, you can’t do so again until you finish a short or long rest. If you want to cast either spell at a higher level, you must expend a spell slot as normal."
+          }
+        ],
+        "cantrips_known": 5
       }
     }
-  },
-  "fighter": {
-    "display_name": "Fighter",
-    "hit_die": "d10",
-    "saving_throws": [
-      "str",
-      "con"
-    ],
-    "armor_proficiencies": [
-      "light",
-      "medium",
-      "heavy",
-      "shields"
-    ],
-    "proficiencies": [
-      "Simple Weapons",
-      "Martial Weapons"
-    ]
-  },
-  "rogue": {
-    "display_name": "Rogue",
-    "hit_die": "d8",
-    "saving_throws": [
-      "dex",
-      "int"
-    ],
-    "armor_proficiencies": [
-      "light"
-    ],
-    "proficiencies": [
-      "Simple weapons",
-      "Hand crossbows",
-      "Longswords",
-      "Rapiers",
-      "Shortswords"
-    ]
-  },
-  "cleric": {
-    "display_name": "Cleric",
-    "hit_die": "d8",
-    "saving_throws": [
-      "wis",
-      "cha"
-    ],
-    "armor_proficiencies": [
-      "light",
-      "medium",
-      "shields"
-    ],
-    "proficiencies": [
-      "light_armor",
-      "medium_armor",
-      "shields",
-      "simple_weapons"
-    ]
   }
 }
