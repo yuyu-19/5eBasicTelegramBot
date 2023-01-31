@@ -49,3 +49,15 @@ The main classes of the project are as follows:
 # Other data classes used by Sheet classes
 - spellData - Contains all data for a spell, including helper methods for rolling dice and upcasting.
 
+
+# Unrelated utility files
+- 5eSpellParser - This is a utility script that parses spell data from the SRD PDF into a JSON format.
+
+# Data files
+These are contained in the 5eDefaults folder, and contain all the 5e-related data.
+- classes.json - This contains all data on classes, such as levels, features, hit dice, etc.
+- races.json - This contains all the data on races.
+- sheetData.json - This contains the default data for sheets, such as the various stats and skills.
+- spellLists.json - This file lists what spells are useable by what classes.
+- spells.json - This file contains all the spell data utilized to create Spell objects.
+- backgrounds.json - This file contains all the various premade backgrounds.
