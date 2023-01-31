@@ -713,7 +713,7 @@
     "description": "A creature of your choice that you can see within range regains hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs. ",
     "higher_levels_description": "At Higher Levels. When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d4 for each slot level above 1st. "
   },
-  "heroes\u2019_feast": {
+  "heroes_feast": {
     "display_name": "Heroes\u2019 Feast",
     "roll_data": [
       {
@@ -1042,7 +1042,7 @@
     "duration": "Duration: Instantaneous ",
     "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see. "
   },
-  "mordenkainen\u2019s_sword": {
+  "mordenkainens_sword": {
     "display_name": "Mordenkainen\u2019s Sword",
     "roll_data": [
       {
@@ -1056,7 +1056,7 @@
     "duration": "Duration: Concentration, up to 1 minute ",
     "description": "You create a sword-shaped plane of force that hovers within range. It lasts for the duration. When the sword appears, you make a melee spell attack against a target of your choice within 5 feet of the sword. On a hit, the target takes 3d10 force damage Until the spell ends, you can use a bonus action on each of your turns to move the sword up to 20 feet to a spot you can see and repeat this attack against the same target or a different one. "
   },
-  "otto\u2019s_irresistible_dance": {
+  "ottos_irresistible_dance": {
     "display_name": "Otto\u2019s Irresistible Dance",
     "roll_data": [],
     "spell_level": 6,

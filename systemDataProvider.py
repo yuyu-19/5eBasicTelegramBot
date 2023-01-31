@@ -8,6 +8,7 @@ import os
 from DataClasses.spellData import Spell
 
 _defaultCharacterSheetData = dict()
+_spellLists = dict()
 _classes = dict()
 _spells:dict[str, Spell] = dict()
 _spellsByLevel:dict[str, dict[str, Spell]] = dict()
@@ -20,12 +21,18 @@ def loadDefaultData(systemDataPath):
     _defaultCharacterSheetData = json.load(open(os.path.join(systemDataPath, "sheetData.json")))
     #I won't check if all the skills reference an existing stat as I'm assuming valid system data.
 
+    global _spellLists
+    _spellLists = json.load(open(os.path.join(systemDataPath, "spellLists.json")))
 
     global _classes
     _classes = json.load(open(os.path.join(systemDataPath, "classes.json")))
     global _spells
     for spellID, spellData in json.load(open(os.path.join(systemDataPath, "spells.json"))).items():
-        _spells[spellID] = Spell(spellData, spellID)
+        spellClasses = []
+        for classID, classSpells in _spellLists.items():
+            if spellID in classSpells:
+                spellClasses.append(classID)
+        _spells[spellID] = Spell(spellData, spellID, spellClasses)
 
 
     global _races

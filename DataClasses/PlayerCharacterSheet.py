@@ -231,8 +231,8 @@ class PCSheet(CharacterSheet):
             for key, data in newSheet._fluff.items():
                 if data == "" and key != "speciality":
                     newSheet._fluff[key] = await userConvo.requestCustomInput("Please input the character's " + key)
-
-            await newSheet._applyProficiencyChoiceBlock(userConvo, chosenBackgroundData["proficiency_choices"])
+            if "proficiency_choices" in chosenBackgroundData:
+                await newSheet._applyProficiencyChoiceBlock(userConvo, chosenBackgroundData["proficiency_choices"])
 
             availableLanguages = getAllLanguages()
             for language in newSheet._languagesKnown:
