@@ -14,7 +14,7 @@ _userLock = asyncio.Lock()
 _campaignLock = asyncio.Lock()
 _nextAvailableCampaignID = 0
 def initDB(dbPath=None):
-    global _users           #TODO: Both users and campaigns are uniquely identified. Find a way to give campaigns unique IDs.
+    global _users
     global _campaigns
     global _dbPath
     if os.path.isfile(dbPath):
@@ -31,13 +31,13 @@ async def addUser(newUser: User):
     else:
         async with _userLock:
             _users[newUser.getUserID()] = newUser
+            saveToFile()
 
 async def addCampaign(newCampaign: Campaign) -> int:
     async with _campaignLock:
         campaignID = len(_campaigns)    #This is actually O(1) complexity, so it's fine.
         newCampaign.setCampaignID(campaignID)
         _campaigns[str(campaignID)] = newCampaign
-        # TODO: Remove this.
         saveToFile()
         return campaignID
 
@@ -45,7 +45,6 @@ async def addAlias(user: User, aliasID: str):
     aliasID = str(aliasID)
     async with _userLock:
         _users[aliasID] = user
-        # TODO: Remove this.
         saveToFile()
 def getUser(userID: str) -> User:
     userID = str(userID)
@@ -54,7 +53,7 @@ def getUser(userID: str) -> User:
     else:
         raise ValueError("User does not exist!")
 
-def getCampaign(campaignID: str) -> Campaign:
+def getCampaign(campaignID: int) -> Campaign:
     campaignID = str(campaignID)
     if str(campaignID) in _campaigns:
         return _campaigns[campaignID]
@@ -68,11 +67,9 @@ def saveToFile():
 async def updateUser(newUserVersion: User):
     async with _userLock:
         _users[str(newUserVersion.getUserID())] = newUserVersion
-        # TODO: Remove this.
         saveToFile()
 
 async def updateCampaign(newCampaignVersion: Campaign):
     async with _campaignLock:
         _campaigns[str(newCampaignVersion.getCampaignID())] = newCampaignVersion
-        # TODO: Remove this.
         saveToFile()

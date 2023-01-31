@@ -4,8 +4,8 @@ import random
 
 import database
 import systemDataProvider
-from DataClasses.userData import createUser
-from messaging.userConversation import UserConversation, registerUserConversation
+from DataClasses.userData import createUser, User
+from messaging.userConversation import UserConversation
 from aioconsole import *
 
 from systemDataProvider import rollFormula
@@ -22,28 +22,6 @@ def inputLoop():
             case "/start" | "s":
                 print("Start!")
                 asyncio.run(createAndStartConversation(userID))
-
-            case "/testRoll":    #TODO: Remove this. This is purely a testing function.
-                formulaToTest = ""
-                wellFormed = False
-                while not wellFormed:
-                    try:
-                        formulaToTest = input("Please input the roll formula you'd like to test (1k rolls)")
-                        rollFormula(formulaToTest)
-                        wellFormed = True
-                    except:
-                        wellFormed = False
-
-
-                results = {}
-                totalRolls = 10000
-                for i in range(int(input("What's the min result this roll can give?")), int(input("What's the max result this roll can give?"))+1):
-                    results[str(i)] = 0
-                for i in range(totalRolls):
-                    newResult = str(rollFormula(formulaToTest))
-                    results[newResult] += 1
-                for key in results:
-                    print(key + ": " + str(results[key]/totalRolls*100))
 
             case _:
                 print("Invalid command.")
@@ -76,11 +54,9 @@ async def createAndStartConversation(userID):
     await aprint("You are logged in as " + user.getUserName() + " (" + user.getUserID() + ")")
     userConvo = ConsoleConversation(user)
     await userConvo.userHandoff()
+    await unregisterUserConversation(user)
 
 class ConsoleConversation(UserConversation):
-    async def userHandoff(self) -> bool:
-        await self._user.startConversation(self)  # Hand control over to the userData class
-        return True
     async def chooseFromListOfStrings(self, optionsAvailable: list, prompt: str) -> str:
         await self.show(prompt)
         if len(optionsAvailable) == 1:
@@ -88,7 +64,7 @@ class ConsoleConversation(UserConversation):
             return optionsAvailable[0]
 
         for option in optionsAvailable:
-            await self.show(str(optionsAvailable.index(option)+1) + ") " + option[0].upper() + option[1:])
+            await self.show(str(optionsAvailable.index(option)+1) + ") " + option[0].upper() + option[1:].replace("_"," "))
         return optionsAvailable[await self.requestInt("", numMin=1, numMax=len(optionsAvailable)) - 1]
 
     async def chooseFromListOfDict(self, optionsAvailable: list, prompt: str) -> dict: #Returns one dict out of all of them
@@ -108,7 +84,7 @@ class ConsoleConversation(UserConversation):
                 return key
         keyList = list(optionsAvailable.keys())
         for key in keyList:
-            await self.show(str(keyList.index(key)+1) + ") " + optionsAvailable[key]["display_name"])
+            await self.show(str(keyList.index(key) + 1) + ") " + optionsAvailable[key]["display_name"])
         chosenIndex = await self.requestInt("", numMin=1, numMax=len(keyList)) - 1
         return keyList[chosenIndex]
 
@@ -184,3 +160,20 @@ class ConsoleConversation(UserConversation):
             except:
                 wellFormed = False
         return userFormula
+
+
+_existingConversations: list[User] = list()
+_conversationLock = asyncio.Lock()
+async def registerUserConversation(user: User):
+    async with _conversationLock:
+        if user not in _existingConversations:
+            _existingConversations.append(user)
+        else:
+            raise ValueError("User already has an ongoing conversation!")
+
+async def unregisterUserConversation(user: User):
+    async with _conversationLock:
+        if user in _existingConversations:
+            _existingConversations.remove(user)
+        else:
+            raise ValueError("User doesn't have an ongoing conversation!")

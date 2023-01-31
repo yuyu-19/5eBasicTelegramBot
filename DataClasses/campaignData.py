@@ -5,6 +5,7 @@ import database
 from DataClasses import PlayerCharacterSheet, characterSheet
 from DataClasses.PlayerCharacterSheet import PCSheet
 from DataClasses.characterSheet import CharacterSheet
+from DataClasses.monsterSheet import MonsterSheet
 from messaging.userConversation import UserConversation
 
 if TYPE_CHECKING:
@@ -23,7 +24,7 @@ class Campaign:
         self._DMs = [creatorID]         #DM IDs
         self._players = []                          #Player IDs
         self._PCdata:list[PCSheet] = list()      #PC sheet objects
-        self._NPCdata:list[CharacterSheet] = list()         #NPC sheet objects
+        self._NPCdata:list[CharacterSheet] = list()         #NPC sheet objects (either PCSheet or MonsterSheet)
 
     def getCampaignID(self):
         return self._campaignID
@@ -31,17 +32,17 @@ class Campaign:
         userID = userConvo.getUserID()
         isDM = userID in self._DMs
         accessibleCharacterSheets = self._getAccessibleCharacterSheets(userID)
+        await userConvo.show("Campaign ID (use this to allow other players to join): " + str(self._campaignID))
 
         if len(accessibleCharacterSheets) == 0 or await userConvo.yesNo("Would you like to create a new character sheet or view an existing one?", trueOption="Create", falseOption="View"):
             if not isDM or await userConvo.yesNo("Would you like to create a PC-like NPC or a monster?", trueOption="PC-like", falseOption="Monster"):
-                chosenCharacterSheet = await PlayerCharacterSheet.createPCSheet(userConvo)
+                chosenCharacterSheet = await PCSheet.PCSheetFactory(userConvo)
                 self._PCdata.append(chosenCharacterSheet)
                 await database.updateCampaign(self)
             else:
-                chosenCharacterSheet = await characterSheet.createCharacterSheet(userConvo)
-                #TODO: Implement monster character sheets
+                chosenCharacterSheet = await MonsterSheet.monsterSheetFactory(userConvo)
+                self._NPCdata.append(chosenCharacterSheet)
                 await database.updateCampaign(self)
-                pass
 
         elif len(accessibleCharacterSheets) > 0:
             chosenCharacterSheet = await userConvo.chooseFromListOfDict(accessibleCharacterSheets, "Which character sheet would you like to view?")
@@ -72,11 +73,13 @@ class Campaign:
     def getDMIDs(self) -> list[dict]:
         return self._DMs
 
-    def addPlayer(self, newPlayerID):
+    async def addPlayer(self, newPlayerID):
         self._players.append(newPlayerID)
+        await database.updateCampaign(self)
 
-    def addDM(self, newDMID):
+    async def addDM(self, newDMID):
         self._DMs.append(newDMID)
+        await database.updateCampaign(self)
 
     def _getAccessibleCharacterSheets(self, userID) -> list[CharacterSheet]:
         isDM = userID in self._DMs
@@ -87,10 +90,9 @@ class Campaign:
             availableCharacterSheets.extend(self._NPCdata)
         else:
             for PlayerSheet in self._PCdata:
-                if PlayerSheet.getDisplayData()["ownerID"] == userID:
+                if PlayerSheet.getDisplayData()["creator_id"] == userID:
                     availableCharacterSheets.append(PlayerSheet)
             #Show only theirs.
 
         return availableCharacterSheets
-        pass
 

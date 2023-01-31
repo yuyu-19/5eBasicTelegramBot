@@ -5,23 +5,29 @@ import random
 import jk_commentjson as json
 import os
 
-_defaultCharacterSheetData = {}
-_classes = {}
-_spells = {}
-_spellsByLevel = {}
-_spellsByClass = {}
-_backgrounds = {}
-_races = {}
+from DataClasses.spellData import Spell
+
+_defaultCharacterSheetData = dict()
+_classes = dict()
+_spells:dict[str, Spell] = dict()
+_spellsByLevel:dict[str, dict[str, Spell]] = dict()
+_spellsByClass:dict[str, dict[str, dict[str, Spell]]] = dict()
+_monsterData:dict = dict()
+_backgrounds = dict()
+_races = dict()
 def loadDefaultData(systemDataPath):
     global _defaultCharacterSheetData
     _defaultCharacterSheetData = json.load(open(os.path.join(systemDataPath, "sheetData.json")))
     #I won't check if all the skills reference an existing stat as I'm assuming valid system data.
 
-    #TODO: Add other data etc.
+
     global _classes
     _classes = json.load(open(os.path.join(systemDataPath, "classes.json")))
     global _spells
-    _spells = json.load(open(os.path.join(systemDataPath, "spells.json")))
+    for spellID, spellData in json.load(open(os.path.join(systemDataPath, "spells.json"))).items():
+        _spells[spellID] = Spell(spellData, spellID)
+
+
     global _races
     _races = json.load(open(os.path.join(systemDataPath, "races.json")))
     global _backgrounds
@@ -32,19 +38,17 @@ def loadDefaultData(systemDataPath):
     # Now that we have the spell array, let's create a couple of internal indexes.
     # Specifically one to iterate over spells by levels and one over spells by class.
     for spellID, spellData in _spells.items():
-        if str(spellData["spell_level"]) not in _spellsByLevel:
-            _spellsByLevel[str(spellData["spell_level"])] = {}
-        _spellsByLevel[str(spellData["spell_level"])][spellID] = spellData
-        for castingClass in spellData["classes"]:
-
+        if str(spellData.spell_level) not in _spellsByLevel:
+            _spellsByLevel[str(spellData.spell_level)] = dict()
+        _spellsByLevel[str(spellData.spell_level)][spellID] = spellData
+        for castingClass in spellData.classes:
             if castingClass not in _spellsByClass:
-                _spellsByClass[castingClass] = {}
+                _spellsByClass[castingClass] = dict()
 
-            if str(spellData["spell_level"]) not in _spellsByClass[castingClass]:
-                _spellsByClass[castingClass][str(spellData["spell_level"])] = {}
+            if str(spellData.spell_level) not in _spellsByClass[castingClass]:
+                _spellsByClass[castingClass][str(spellData.spell_level)] = dict()
 
-            _spellsByClass[castingClass][str(spellData["spell_level"])][spellID] = spellData
-
+            _spellsByClass[castingClass][str(spellData.spell_level)][spellID] = spellData
 
 
 
@@ -80,22 +84,30 @@ def getClass(classID) -> dict:
 def getClasses() -> dict:
     return copy.deepcopy(_classes)
 
-def getSpells() -> dict:
+def getSpells() -> dict[str, Spell]:
     return copy.deepcopy(_spells)
 
-def getSpell(spellID) -> dict:
+def getSpell(spellID) -> Spell:
     return copy.deepcopy(_spells[spellID])
 
-def getSpellsByLevel(spellLevel) -> dict:
-    return copy.deepcopy(_spellsByLevel[spellLevel])
+def getSpellsByLevel(spellLevel:int) -> dict[str, Spell]:
+    return copy.deepcopy(_spellsByLevel[str(spellLevel)])
 
-def getSpellsByClass(castingClass) -> dict:
+def getSpellsByClass(castingClass) -> dict[str, dict[str, Spell]]:
     return copy.deepcopy(_spellsByClass[castingClass])
 
-def getSpellsByClassAndLevel(castingClass, spellLevel:int) -> dict:
+def getSpellcastingAbilityForClass(castingClass) -> str:
+    match castingClass:
+        case "wizard":
+            return "int"
+        case "cleric":
+            return "wis"
+    return ""
+
+def getSpellsByClassAndLevel(castingClass, spellLevel:int) -> dict[str, Spell]:
     return copy.deepcopy(_spellsByClass[castingClass][str(spellLevel)])
 
-def getClassLevelData(classID, level) -> dict:
+def getClassLevelData(classID, level:int) -> dict:
     return copy.deepcopy(_classes[classID]["levels"][str(level)])
 def getClassData(classID) -> dict:
     return copy.deepcopy(_classes[classID])
@@ -106,6 +118,8 @@ def getRaces() -> dict:
 def getRaceData(raceID: str) -> dict:
     return copy.deepcopy(_races[raceID])
 
+def getMonsterTypes() -> list[str]:
+    return copy.deepcopy(_monsterData["types"])
 
 
 """

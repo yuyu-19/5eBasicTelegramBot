@@ -28,8 +28,6 @@ class User:
         self._userName: str = userName
         self._DMing: list[dict] = list()         #Contains the IDs and NAMES for all campaigns the player is DMing
         self._playing: list[dict] = list()      #Contains the IDs and NAMES for all campaigns the player is playing in
-        #TODO: ADD TO DB!!!!!!!!!!!
-
     async def startConversation(self, userConvo: UserConversation):
         #This function is called to prompt the user to choose a campaign from which to pull data (or make a new one)
         exitConversation = False
@@ -37,7 +35,7 @@ class User:
             if len(self._playing) == 0 and len(self._DMing) == 0:
                 chooseExisting = False
             else:
-                chooseExisting = await userConvo.yesNo("Would you like to create/join a new campaign or select an existing one?", trueOption="Existing", falseOption="Create")
+                chooseExisting = await userConvo.yesNo("Would you like to create/join a new campaign or select one you're already part of?", trueOption="Existing", falseOption="Create")
 
             if chooseExisting:
                 if len(self._DMing) == 0:
@@ -55,12 +53,22 @@ class User:
                     self.addDMingCampaign(newCampaign)
                     await userConvo.show("Campaign created!")
                 else:
-                    #TODO: JOINING CAMPAIGNS
-                    pass
+                    campaignID = await userConvo.requestInt("Please input the ID of the campaign you'd like to join.")
+                    try:
+                        joiningCampaign = database.getCampaign(campaignID)
+                        if await userConvo.yesNo("Are you joining as player or DM?", trueOption="DM",falseOption="player"):
+                            await joiningCampaign.addDM(userConvo.getUserID())
+                            self.addDMingCampaign(joiningCampaign)
+                        else:
+                            await joiningCampaign.addPlayer(userConvo.getUserID())
+                            self.addPlayingCampaign(joiningCampaign)
+                        await userConvo.show("Campaign successfully joined!")
+                    except ValueError:
+                        await userConvo.show("Invalid ID!")
                 await database.updateUser(self)
-            exitConversation = await userConvo.yesNo("Are you finished?")
+            exitConversation = await userConvo.yesNo("Would you like to terminate this session?")
 
-        print("Session terminated. Use /start to begin a new one.")
+        await userConvo.show("Session terminated. Use /start to begin a new one.")
 
     def getUserID(self) -> str:
         return self._userID

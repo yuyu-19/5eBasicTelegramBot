@@ -27,7 +27,7 @@
       "weapon": [
         {
           "display_name": "Shortsword",
-          "proficiency": true,
+          "proficient": true,
           "attack_bonus": 0,
           "attack_stats": [
             "dex",
@@ -44,7 +44,7 @@
           "display_name": "Plate Armor",
           "armor_type": "heavy",
           //Only medium and light scale off of dex
-          "AC": 18,
+          "base_AC": 18,
           "str_req": 15,
           "stealth_disad": false
         }
@@ -146,12 +146,15 @@
           ]
         }
       },
-      "3": {},
-      "4": {
-        "asi": {
-          "display_name": "Ability Score Improvement",
-          "description": "Gain +2 in one stat, or +1 to two stats."
-        }
+      "4": {},
+      "3": {
+        "features": [
+          {
+            "id": "asi",
+            "display_name": "Ability Score Improvement",
+            "description": "Gain +2 in one stat, or +1 to two stats."
+          }
+        ]
       }
     }
   },

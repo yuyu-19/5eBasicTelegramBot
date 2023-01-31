@@ -9,12 +9,6 @@ import os
 #TODO: idea: create a messageHandler per every userID, putting them in a dict
 #This way incoming messages can be redirected to the correct handler
 
-from telegram.ext import Updater, Dispatcher
-from telegram import Update
-from telegram.ext import CallbackContext
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters
-
 import systemDataProvider
 import database
 from messaging.consoleConversation import ConsoleConversation, inputLoop
@@ -52,4 +46,4 @@ if __name__ == '__main__':
     #messaging.telegramConversation.initProvider(configData["token"])
     print("Starting inputloop...")
     asyncio.run(messaging.consoleConversation.inputLoop(), debug=True)
-
+    #messaging.telegramConversation.initProvider(configData["token"])
