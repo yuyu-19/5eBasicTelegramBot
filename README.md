@@ -1,6 +1,6 @@
 # 5eBasicTelegramBot
 
-This bot is an implementation of the 5e SRD.
+This bot is an implementation of the 5e SRD. To run it, simply start main.py once the required libraries have been installed.
 
 It is messaging system-agnostic. It contains an implementation of the userConversation interface for Telegram and a simple console input, but it could easily be extended to support other platforms.
 The flow of its functions is as follows:
